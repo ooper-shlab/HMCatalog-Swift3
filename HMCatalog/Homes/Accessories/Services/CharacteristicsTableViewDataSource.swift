@@ -11,7 +11,7 @@ import HomeKit
 
 /// Represents the sections in the `CharacteristicsViewController`.
 enum CharacteristicTableViewSection: Int {
-    case Characteristics, AssociatedServiceType
+    case characteristics, associatedServiceType
 }
 
 /// A `UITableViewDataSource` that populates a `CharacteristicsViewController`.
@@ -52,28 +52,28 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
     /// Registers all of the characteristic cell reuse identifiers with this table.
     func registerReuseIdentifiers() {
         let characteristicNib = UINib(nibName: Identifiers.characteristicCell, bundle: nil)
-        tableView.registerNib(characteristicNib, forCellReuseIdentifier: Identifiers.characteristicCell)
+        tableView.register(characteristicNib, forCellReuseIdentifier: Identifiers.characteristicCell)
         
         let sliderNib = UINib(nibName: Identifiers.sliderCharacteristicCell, bundle: nil)
-        tableView.registerNib(sliderNib, forCellReuseIdentifier: Identifiers.sliderCharacteristicCell)
+        tableView.register(sliderNib, forCellReuseIdentifier: Identifiers.sliderCharacteristicCell)
         
         let switchNib = UINib(nibName: Identifiers.switchCharacteristicCell, bundle: nil)
-        tableView.registerNib(switchNib, forCellReuseIdentifier: Identifiers.switchCharacteristicCell)
+        tableView.register(switchNib, forCellReuseIdentifier: Identifiers.switchCharacteristicCell)
         
         let segmentedNib = UINib(nibName: Identifiers.segmentedControlCharacteristicCell, bundle: nil)
-        tableView.registerNib(segmentedNib, forCellReuseIdentifier: Identifiers.segmentedControlCharacteristicCell)
+        tableView.register(segmentedNib, forCellReuseIdentifier: Identifiers.segmentedControlCharacteristicCell)
         
         let textNib = UINib(nibName: Identifiers.textCharacteristicCell, bundle: nil)
-        tableView.registerNib(textNib, forCellReuseIdentifier: Identifiers.textCharacteristicCell)
+        tableView.register(textNib, forCellReuseIdentifier: Identifiers.textCharacteristicCell)
         
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Identifiers.serviceTypeCell)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: Identifiers.serviceTypeCell)
     }
     
     /**
         - returns: The number of sections, computed from whether or not
                    the services supports an associated service type.
     */
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return service.supportsAssociatedServiceType ? 2 : 1
     }
     
@@ -81,12 +81,12 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
         The characteristics section uses the services count to generate the number of rows.
         The associated service type uses the valid associated service types.
     */
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch CharacteristicTableViewSection(rawValue: section) {
-            case .Characteristics?:
+            case .characteristics?:
                 return service.characteristics.count
                 
-            case .AssociatedServiceType?:
+            case .associatedServiceType?:
                 // For 'None'.
                 return HMService.validAssociatedServiceTypes.count + 1
                 
@@ -103,7 +103,7 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
         
         - returns:  The localized service type in that row, or 'None'.
     */
-    func displayedServiceTypeForRow(row: Int) -> String {
+    func displayedServiceTypeForRow(_ row: Int) -> String {
         let serviceTypes = HMService.validAssociatedServiceTypes
         if row < serviceTypes.count {
             return HMService.localizedDescriptionForServiceType(serviceTypes[row])
@@ -119,7 +119,7 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
         
         - returns:  `true` if the current row is a valid service type, `false` otherwise
     */
-    func serviceTypeIsSelectedForRow(row: Int) -> Bool {
+    func serviceTypeIsSelectedForRow(_ row: Int) -> Bool {
         let serviceTypes = HMService.validAssociatedServiceTypes
         if row >= serviceTypes.count {
             return service.associatedServiceType == nil
@@ -133,11 +133,11 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
     }
     
     /// Generates a cell for an associated service.
-    private func tableView(tableView: UITableView, associatedServiceTypeCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.serviceTypeCell, forIndexPath: indexPath)
+    private func tableView(_ tableView: UITableView, associatedServiceTypeCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.serviceTypeCell, for: indexPath)
         
-        cell.textLabel?.text = displayedServiceTypeForRow(indexPath.row)
-        cell.accessoryType = serviceTypeIsSelectedForRow(indexPath.row) ? .Checkmark : .None
+        cell.textLabel?.text = displayedServiceTypeForRow((indexPath as NSIndexPath).row)
+        cell.accessoryType = serviceTypeIsSelectedForRow((indexPath as NSIndexPath).row) ? .checkmark : .none
 
         return cell
     }
@@ -146,8 +146,8 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
         Generates a characteristic cell based on the type of characteristic
         located at the specified index path.
     */
-    private func tableView(tableView: UITableView, characteristicCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let characteristic = service.characteristics[indexPath.row]
+    private func tableView(_ tableView: UITableView, characteristicCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let characteristic = service.characteristics[(indexPath as NSIndexPath).row]
 
         var reuseIdentifier = Identifiers.characteristicCell
         
@@ -167,7 +167,7 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
             reuseIdentifier = Identifiers.textCharacteristicCell
         }
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath) as! CharacteristicCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! CharacteristicCell
  
         cell.showsFavorites = showsFavorites
         cell.delegate = delegate
@@ -177,12 +177,12 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
     }
     
     /// Uses convenience methods to generate a cell based on the index path's section.
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        switch CharacteristicTableViewSection(rawValue: indexPath.section) {
-            case .Characteristics?:
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch CharacteristicTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .characteristics?:
                 return self.tableView(tableView, characteristicCellForRowAtIndexPath: indexPath)
                 
-            case .AssociatedServiceType?:
+            case .associatedServiceType?:
                 return self.tableView(tableView, associatedServiceTypeCellForRowAtIndexPath: indexPath)
             
             case nil:
@@ -191,12 +191,12 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
     }
     
     /// - returns:  A localized string for the section.
-    func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch CharacteristicTableViewSection(rawValue: section) {
-            case .Characteristics?:
+            case .characteristics?:
                 return NSLocalizedString("Characteristics", comment: "Characteristics")
                 
-            case .AssociatedServiceType?:
+            case .associatedServiceType?:
                 return NSLocalizedString("Associated Service Type", comment: "Associated Service Type")
                 
             case nil:

@@ -27,10 +27,10 @@ class ControlsViewController: HMCatalogViewController, HMAccessoryDelegate {
     // MARK: View Methods
     
     /// Sends the selected service into the destination view controller.
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        super.prepareForSegue(segue, sender: sender)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
         if segue.identifier == Identifiers.showServiceSegue {
-            if let indexPath = tableView.indexPathForCell(sender as! UITableViewCell) {
+            if let indexPath = tableView.indexPath(for: sender as! UITableViewCell) {
                 let characteristicsViewController = segue.intendedDestinationViewController as! CharacteristicsViewController
 
                 if let selectedService = tableViewDataSource.serviceForIndexPath(indexPath) {
@@ -49,7 +49,7 @@ class ControlsViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Reloads the view.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationItem.title = home.name
         reloadData()
@@ -59,7 +59,7 @@ class ControlsViewController: HMCatalogViewController, HMAccessoryDelegate {
     
     private func reloadData() {
         tableViewDataSource.reloadTable()
-        let sections = tableViewDataSource.numberOfSectionsInTableView(tableView)
+        let sections = tableViewDataSource.numberOfSections(in: tableView)
 
         if sections == 0 {
             setBackgroundMessage(tableViewDataSource.emptyMessage())
@@ -86,34 +86,34 @@ class ControlsViewController: HMCatalogViewController, HMAccessoryDelegate {
     
     // MARK: HMHomeDelegate Methods
     
-    func home(home: HMHome, didAddAccessory accessory: HMAccessory)  {
+    func home(_ home: HMHome, didAddAccessory accessory: HMAccessory)  {
         accessory.delegate = self
         reloadData()
     }
     
-    func home(home: HMHome, didRemoveAccessory accessory: HMAccessory)  {
+    func home(_ home: HMHome, didRemoveAccessory accessory: HMAccessory)  {
         reloadData()
     }
 
     // MARK: HMAccessoryDelegate Methods
     
-    func accessoryDidUpdateReachability(accessory: HMAccessory) {
+    func accessoryDidUpdateReachability(_ accessory: HMAccessory) {
         reloadData()
     }
     
-    func accessory(accessory: HMAccessory, didUpdateNameForService service: HMService)  {
+    func accessory(_ accessory: HMAccessory, didUpdateNameFor service: HMService)  {
         reloadData()
     }
     
-    func accessory(accessory: HMAccessory, didUpdateAssociatedServiceTypeForService service: HMService)  {
+    func accessory(_ accessory: HMAccessory, didUpdateAssociatedServiceTypeFor service: HMService)  {
         reloadData()
     }
     
-    func accessoryDidUpdateServices(accessory: HMAccessory) {
+    func accessoryDidUpdateServices(_ accessory: HMAccessory) {
         reloadData()
     }
     
-    func accessoryDidUpdateName(accessory: HMAccessory) {
+    func accessoryDidUpdateName(_ accessory: HMAccessory) {
         reloadData()
     }
 }

@@ -42,15 +42,15 @@ class LocationTriggerViewController: EventTriggerViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         triggerCreator = LocationTriggerCreator(trigger: trigger, home: home)
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Identifiers.locationCell)
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Identifiers.regionStatusCell)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: Identifiers.locationCell)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: Identifiers.regionStatusCell)
     }
     
     /**
         Generates an address string for the current region location and
         reloads the table view.
     */
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         viewIsDisplayed = true
         if let region = locationTriggerCreator.targetRegion {
@@ -67,10 +67,10 @@ class LocationTriggerViewController: EventTriggerViewController {
                 if let mostLikelyPlacemark = placemarks?.first {
                     let address = CNMutablePostalAddress(placemark: mostLikelyPlacemark)
                     let addressFormatter = CNPostalAddressFormatter()
-                    let addressString = addressFormatter.stringFromPostalAddress(address)
-                    self.localizedAddress = addressString.stringByReplacingOccurrencesOfString("\n", withString: ", ")
-                    let section = NSIndexSet(index: 2)
-                    self.tableView.reloadSections(section, withRowAnimation: .Automatic)
+                    let addressString = addressFormatter.string(from: address)
+                    self.localizedAddress = addressString.replacingOccurrences(of: "\n", with: ", ")
+                    let section = IndexSet(integer: 2)
+                    self.tableView.reloadSections(section, with: .automatic)
                 }
             }
         }
@@ -78,8 +78,8 @@ class LocationTriggerViewController: EventTriggerViewController {
     }
     
     /// Passes the trigger creator and region into the `MapViewController`.
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        super.prepareForSegue(segue, sender: sender)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
         if segue.identifier == Identifiers.selectLocationSegue {
             guard let destinationVC = segue.intendedDestinationViewController as? MapViewController else { return }
             // Give the map the previous target region (if exists).
@@ -88,7 +88,7 @@ class LocationTriggerViewController: EventTriggerViewController {
         }
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         viewIsDisplayed = false
     }
@@ -99,9 +99,9 @@ class LocationTriggerViewController: EventTriggerViewController {
         - returns:  The number of rows in the Region section;
                     defaults to the super implementation for other sections.
     */
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch sectionForIndex(section) {
-            case .Region?:
+            case .region?:
                 return 2
                 
             case nil:
@@ -117,26 +117,26 @@ class LocationTriggerViewController: EventTriggerViewController {
         Handles Region and Location sections, defaults to
         super implementations for other sections.
     */
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        switch sectionForIndex(indexPath.section) {
-            case .Region?:
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .region?:
                 return self.tableView(tableView, regionStatusCellForRowAtIndexPath: indexPath)
                 
-            case .Location?:
+            case .location?:
                 return self.tableView(tableView, locationCellForRowAtIndexPath: indexPath)
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
                 
             default:
-                return super.tableView(tableView, cellForRowAtIndexPath: indexPath)
+                return super.tableView(tableView, cellForRowAt: indexPath)
         }
     }
     
     /// Generates the single location cell.
-    private func tableView(tableView: UITableView, locationCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.locationCell, forIndexPath: indexPath)
-        cell.accessoryType = .DisclosureIndicator
+    private func tableView(_ tableView: UITableView, locationCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.locationCell, for: indexPath)
+        cell.accessoryType = .disclosureIndicator
         
         if locationTriggerCreator.targetRegion != nil {
             cell.textLabel?.text = localizedAddress ?? NSLocalizedString("Update Location", comment: "Update Location")
@@ -148,10 +148,10 @@ class LocationTriggerViewController: EventTriggerViewController {
     }
     
     /// Generates the cell which allow the user to select either 'on enter' or 'on exit'.
-    private func tableView(tableView: UITableView, regionStatusCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.regionStatusCell, forIndexPath: indexPath)
-        cell.textLabel?.text = LocationTriggerViewController.regionStatusTitles[indexPath.row]
-        cell.accessoryType = (locationTriggerCreator.targetRegionStateIndex == indexPath.row) ? .Checkmark : .None
+    private func tableView(_ tableView: UITableView, regionStatusCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.regionStatusCell, for: indexPath)
+        cell.textLabel?.text = LocationTriggerViewController.regionStatusTitles[(indexPath as NSIndexPath).row]
+        cell.accessoryType = (locationTriggerCreator.targetRegionStateIndex == (indexPath as NSIndexPath).row) ? .checkmark : .none
         return cell
     }
     
@@ -159,21 +159,21 @@ class LocationTriggerViewController: EventTriggerViewController {
         Allows the user to select a location or change the region status.
         Defaults to the super implmentation for other sections.
     */
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        switch sectionForIndex(indexPath.section) {
-            case .Location?:
-                performSegueWithIdentifier(Identifiers.selectLocationSegue, sender: self)
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .location?:
+                performSegue(withIdentifier: Identifiers.selectLocationSegue, sender: self)
                 
-            case .Region?:
-                locationTriggerCreator.targetRegionStateIndex = indexPath.row
-                let reloadIndexSet = NSIndexSet(index: indexPath.section)
-                tableView.reloadSections(reloadIndexSet, withRowAnimation: .Automatic)
+            case .region?:
+                locationTriggerCreator.targetRegionStateIndex = (indexPath as NSIndexPath).row
+                let reloadIndexSet = IndexSet(integer: (indexPath as NSIndexPath).section)
+                tableView.reloadSections(reloadIndexSet, with: .automatic)
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
                 
             default:
-                super.tableView(tableView, didSelectRowAtIndexPath: indexPath)
+                super.tableView(tableView, didSelectRowAt: indexPath)
         }
     }
     
@@ -181,12 +181,12 @@ class LocationTriggerViewController: EventTriggerViewController {
         - returns:  A localized title for the Location and Region sections.
                     Defaults to the super implmentation for other sections.
     */
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch sectionForIndex(section) {
-            case .Location?:
+            case .location?:
                 return NSLocalizedString("Location", comment: "Location")
                 
-            case .Region?:
+            case .region?:
                 return NSLocalizedString("Region Status", comment: "Region Status")
                 
             case nil:
@@ -201,9 +201,9 @@ class LocationTriggerViewController: EventTriggerViewController {
         - returns:  A localized description of the region status.
                     Defaults to the super implmentation for other sections.
     */
-    override func tableView(tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         switch sectionForIndex(section) {
-            case .Region?:
+            case .region?:
                 return NSLocalizedString("This trigger can activate when you enter or leave a region. For example, when you arrive at home or when you leave work.", comment: "Location Region Description")
                 
             case nil:
@@ -221,25 +221,25 @@ class LocationTriggerViewController: EventTriggerViewController {
         
         - returns: The `TriggerTableViewSection` for the given index.
     */
-    override func sectionForIndex(index: Int) -> TriggerTableViewSection? {
+    override func sectionForIndex(_ index: Int) -> TriggerTableViewSection? {
         switch index {
             case 0:
-                return .Name
+                return .name
                 
             case 1:
-                return .Enabled
+                return .enabled
                 
             case 2:
-                return .Location
+                return .location
                 
             case 3:
-                return .Region
+                return .region
                 
             case 4:
-                return .Conditions
+                return .conditions
                 
             case 5:
-                return .ActionSets
+                return .actionSets
                 
             default:
                 return nil

@@ -13,10 +13,10 @@ import HomeKit
 class ActionCell: UITableViewCell {
     /// Ignores the passed-in style and overrides it with `.Subtitle`.
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-        super.init(style: .Subtitle, reuseIdentifier: reuseIdentifier)
-        selectionStyle = .None
-        detailTextLabel?.textColor = UIColor.lightGrayColor()
-        accessoryType = .None
+        super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
+        selectionStyle = .none
+        detailTextLabel?.textColor = UIColor.lightGray
+        accessoryType = .none
     }
     
     /// Required init.
@@ -32,12 +32,12 @@ class ActionCell: UITableViewCell {
         - parameter characteristic: The characteristic this cell represents.
         - parameter targetValue:    The target value from this action.
     */
-    func setCharacteristic(characteristic: HMCharacteristic, targetValue: AnyObject) {
+    func setCharacteristic(_ characteristic: HMCharacteristic, targetValue: AnyObject) {
         let targetDescription = "\(characteristic.localizedDescription) → \(characteristic.localizedDescriptionForValue(targetValue))"
         textLabel?.text = targetDescription
         
         let contextDescription = NSLocalizedString("%@ in %@", comment: "Service in Accessory")
-        if let service = characteristic.service, accessory = service.accessory {
+        if let service = characteristic.service, let accessory = service.accessory {
             detailTextLabel?.text = String(format: contextDescription, service.name, accessory.name)
         }
         else {

@@ -54,7 +54,7 @@ extension HMEventTrigger {
         - returns:  All `HMEvent`s in the events list that are
                     `HMCharacteristicEvent`s.
     */
-    var characteristicEvents: [HMCharacteristicEvent] {
-        return events.filter { $0 is HMCharacteristicEvent } as! [HMCharacteristicEvent]
+    var characteristicEvents: [HMCharacteristicEvent<NSCopying>] {
+        return events.filter { $0 is HMCharacteristicEvent<NSCopying> } as! [HMCharacteristicEvent<NSCopying>]
     }
 }

@@ -39,7 +39,7 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
     }
     
     /// Resets the list of homes (which will update the view).
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         resetHomesList()
     }
@@ -59,17 +59,17 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
     }
     
     /// Sets the home store's current home based on which cell was selected.
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        super.prepareForSegue(segue, sender: sender)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
         
         if segue.identifier == Identifiers.showHomeSegue {
-            if sender === self {
+            if sender as AnyObject? === self {
                 // Don't update the selected home if we sent ourselves here.
                 return
             }
 
-            if let indexPath = tableView.indexPathForCell(sender as! UITableViewCell) {
-                homeStore.home = homes[indexPath.row]
+            if let indexPath = tableView.indexPath(for: sender as! UITableViewCell) {
+                homeStore.home = homes[(indexPath as NSIndexPath).row]
             }
         }
     }
@@ -82,7 +82,7 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
         
         - returns:  The number of homes in the internal array.
     */
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let rows = homes.count
 
         if rows == 0 {
@@ -100,9 +100,9 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
         Generates a basic cell for a home.
         Subtext is provided to tell the user if the home is shared or owned by the user.
     */
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.homeCell, forIndexPath: indexPath)
-        let home = homes[indexPath.row]
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.homeCell, for: indexPath)
+        let home = homes[(indexPath as NSIndexPath).row]
         
         cell.textLabel?.text = home.name
         cell.detailTextLabel?.text = sharedTextForHome(home)
@@ -122,13 +122,13 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
         
         - returns:  `true` if `home1` is ordered before `home2`; `false` otherwise.
     */
-    private func orderHomes(home1: HMHome, home2: HMHome) -> Bool {
+    private func orderHomes(_ home1: HMHome, home2: HMHome) -> Bool {
         if home1.isAdmin == home2.isAdmin {
             /*
                 We are comparing two shared homes or two of our homes, just compare
                 names.
             */
-            return home1.name.localizedCompare(home2.name) == .OrderedAscending
+            return home1.name.localizedCompare(home2.name) == .orderedAscending
         }
         else {
             /*
@@ -144,13 +144,13 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
         The list is then sorted and the view is reloaded.
     */
     private func resetHomesList() {
-        homes = homeManager.homes.sort(orderHomes)
+        homes = homeManager.homes.sorted(by: orderHomes)
         tableView.reloadData()
     }
     
     /// Sorts the list of homes (without reloading from the home manager).
     func sortHomes() {
-        homes.sortInPlace(orderHomes)
+        homes.sort(by: orderHomes)
     }
     
     /**
@@ -159,15 +159,15 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
         
         - parameter home: The new `HMHome` that's been added.
     */
-    func didAddHome(home: HMHome) {
+    func didAddHome(_ home: HMHome) {
         homes.append(home)
 
         sortHomes()
         
-        if let newHomeIndex = homes.indexOf(home) {
-            let indexPathOfNewHome = NSIndexPath(forRow: newHomeIndex, inSection: 0)
+        if let newHomeIndex = homes.index(of: home) {
+            let indexPathOfNewHome = IndexPath(row: newHomeIndex, section: 0)
            
-            tableView.insertRowsAtIndexPaths([indexPathOfNewHome], withRowAnimation: .Automatic)
+            tableView.insertRows(at: [indexPathOfNewHome], with: .automatic)
         }
     }
     
@@ -177,12 +177,12 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
         
         - parameter home: The `HMHome` to remove.
     */
-    func didRemoveHome(home: HMHome) {
-        guard let removedHomeIndex = homes.indexOf(home) else { return }
+    func didRemoveHome(_ home: HMHome) {
+        guard let removedHomeIndex = homes.index(of: home) else { return }
         
-        homes.removeAtIndex(removedHomeIndex)
-        let indexPath = NSIndexPath(forRow: removedHomeIndex, inSection: 0)
-        tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+        homes.remove(at: removedHomeIndex)
+        let indexPath = IndexPath(row: removedHomeIndex, section: 0)
+        tableView.deleteRows(at: [indexPath], with: .automatic)
     }
     
     /**
@@ -190,7 +190,7 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
         
         - parameter home: The `HMHome` to describe.
     */
-    func sharedTextForHome(home: HMHome) -> String {
+    func sharedTextForHome(_ home: HMHome) -> String {
         if !home.isAdmin {
             return NSLocalizedString("Shared with Me", comment: "Shared with Me")
         }
@@ -202,11 +202,11 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
     // MARK: HMHomeDelegate Methods
     
     /// Finds the cell with corresponds to the provided home and reloads it.
-    func homeDidUpdateName(home: HMHome) {
-        if let homeIndex = homes.indexOf(home) {
-            let indexPath = NSIndexPath(forRow: homeIndex, inSection: 0)
+    func homeDidUpdateName(_ home: HMHome) {
+        if let homeIndex = homes.index(of: home) {
+            let indexPath = IndexPath(row: homeIndex, section: 0)
           
-            tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+            tableView.reloadRows(at: [indexPath], with: .automatic)
         }
     }
     
@@ -219,19 +219,19 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
         For this reason, this method will close all modal views and pop all detail views
         if the home store's current home is no longer in the home manager's list of homes.
     */
-    func homeManagerDidUpdateHomes(manager: HMHomeManager) {
+    func homeManagerDidUpdateHomes(_ manager: HMHomeManager) {
         registerAsDelegate()
         resetHomesList()
         
-        if let home = homeStore.home where !manager.homes.contains(home) {
+        if let home = homeStore.home , !manager.homes.contains(home) {
             // Close all modal and detail views.
-            dismissViewControllerAnimated(true, completion: nil)
-            navigationController?.popToRootViewControllerAnimated(true)
+            dismiss(animated: true, completion: nil)
+            _ = navigationController?.popToRootViewController(animated: true)
         }
     }
     
     /// Registers for the delegate of the new home and updates the view.
-    func homeManager(manager: HMHomeManager, didAddHome home: HMHome) {
+    func homeManager(_ manager: HMHomeManager, didAdd home: HMHome) {
         home.delegate = self
 
         didAddHome(home)
@@ -243,15 +243,15 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
         If the removed home was the current home, this view controller will dismiss
         all modals views and pop all detail views.
     */
-    func homeManager(manager: HMHomeManager, didRemoveHome home: HMHome) {
+    func homeManager(_ manager: HMHomeManager, didRemove home: HMHome) {
         didRemoveHome(home)
         
-        guard let selectedHome = homeStore.home where home == selectedHome else { return }
+        guard let selectedHome = homeStore.home , home == selectedHome else { return }
 
         homeStore.home = nil
         
         // Close all modal and detail views.
-        dismissViewControllerAnimated(true, completion: nil)
-        navigationController?.popToRootViewControllerAnimated(true)
+        dismiss(animated: true, completion: nil)
+        _ = navigationController?.popToRootViewController(animated: true)
     }
 }

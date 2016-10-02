@@ -34,12 +34,12 @@ class EventTriggerViewController: TriggerViewController {
     /// Registers table view for cells.
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier:Identifiers.addCell)
-        tableView.registerClass(ConditionCell.self, forCellReuseIdentifier:Identifiers.conditionCell)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier:Identifiers.addCell)
+        tableView.register(ConditionCell.self, forCellReuseIdentifier:Identifiers.conditionCell)
     }
     
     /// Hands off the trigger creator to the condition view controllers.
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.intendedDestinationViewController {
             case let timeVC as TimeConditionViewController:
                 timeVC.triggerCreator = eventTriggerCreator
@@ -59,9 +59,9 @@ class EventTriggerViewController: TriggerViewController {
         - returns:  In the conditions section: the number of conditions, plus one 
                     for the add row. Defaults to the super implementation.
     */
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch sectionForIndex(section) {
-            case .Conditions?:
+            case .conditions?:
                 // Add row.
                 return eventTriggerCreator.conditions.count + 1
                 
@@ -77,10 +77,10 @@ class EventTriggerViewController: TriggerViewController {
         Launchs "Add Condition" if the 'add index path' is selected.
         Defaults to the super implementation.
     */
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        switch sectionForIndex(indexPath.section) {
-            case .Conditions?:
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .conditions?:
                 if indexPathIsAdd(indexPath) {
                     addCondition()
                 }
@@ -89,7 +89,7 @@ class EventTriggerViewController: TriggerViewController {
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
                 
             default:
-                super.tableView(tableView, didSelectRowAtIndexPath: indexPath)
+                super.tableView(tableView, didSelectRowAt: indexPath)
         }
     }
     
@@ -97,20 +97,20 @@ class EventTriggerViewController: TriggerViewController {
         Switches to select the correct type of cell for the section.
         Defaults to the super implementation.
     */
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPathIsAdd(indexPath) {
             return self.tableView(tableView, addCellForRowAtIndexPath: indexPath)
         }
         
-        switch sectionForIndex(indexPath.section) {
-            case .Conditions?:
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .conditions?:
                 return self.tableView(tableView, conditionCellForRowAtIndexPath: indexPath)
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
                 
             default:
-                return super.tableView(tableView, cellForRowAtIndexPath: indexPath)
+                return super.tableView(tableView, cellForRowAt: indexPath)
         }
     }
     
@@ -118,13 +118,13 @@ class EventTriggerViewController: TriggerViewController {
         The conditions can be removed, the 'add index path' cannot.
         For all others, default to super implementation.
     */
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         if indexPathIsAdd(indexPath) {
             return false
         }
         
-        switch sectionForIndex(indexPath.section) {
-            case .Conditions?:
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .conditions?:
                 return true
                 
             case nil:
@@ -136,20 +136,20 @@ class EventTriggerViewController: TriggerViewController {
     }
     
     /// Remove the selected condition from the trigger creator.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            let predicate = eventTriggerCreator.conditions[indexPath.row]
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let predicate = eventTriggerCreator.conditions[(indexPath as NSIndexPath).row]
             eventTriggerCreator.removeCondition(predicate)
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
         }
     }
     
     /// - returns:  An 'add cell' with 'Add Condition' text.
-    func tableView(tableView: UITableView, addCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.addCell, forIndexPath: indexPath)
+    func tableView(_ tableView: UITableView, addCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.addCell, for: indexPath)
         let cellText: String
-        switch sectionForIndex(indexPath.section) {
-            case .Conditions?:
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .conditions?:
                 cellText = NSLocalizedString("Add Condition…", comment: "Add Condition")
                 
             case nil:
@@ -166,9 +166,9 @@ class EventTriggerViewController: TriggerViewController {
     }
     
     /// - returns:  A localized description of a trigger. Falls back to super implementation.
-    override func tableView(tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         switch sectionForIndex(section) {
-            case .Conditions?:
+            case .conditions?:
                 return NSLocalizedString("When a trigger is activated by an event, it checks these conditions. If all of them are true, it will set its scenes.", comment: "Trigger Conditions Description")
                 
             case nil:
@@ -182,21 +182,21 @@ class EventTriggerViewController: TriggerViewController {
     // MARK: Helper Methods
     
     /// - returns:  A 'condition cell', which displays information about the condition.
-    private func tableView(tableView: UITableView, conditionCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.conditionCell) as! ConditionCell
-        let condition = eventTriggerCreator.conditions[indexPath.row]
+    private func tableView(_ tableView: UITableView, conditionCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.conditionCell) as! ConditionCell
+        let condition = eventTriggerCreator.conditions[(indexPath as NSIndexPath).row]
 
         switch condition.homeKitConditionType {
-            case .Characteristic(let characteristic, let value):
+            case .characteristic(let characteristic, let value):
                 cell.setCharacteristic(characteristic, targetValue: value)
 
-            case .ExactTime(let order, let dateComponents):
+            case .exactTime(let order, let dateComponents):
                 cell.setOrder(order, dateComponents: dateComponents)
             
-            case .SunTime(let order, let sunState):
+            case .sunTime(let order, let sunState):
                 cell.setOrder(order, sunState: sunState)
             
-            case .Unknown:
+            case .unknown:
                 cell.setUnknown()
         }
 
@@ -206,39 +206,39 @@ class EventTriggerViewController: TriggerViewController {
     /// Presents an alert controller to choose the type of trigger.
     private func addCondition() {
         let title = NSLocalizedString("Add Condition", comment: "Add Condition")
-        let alertController = UIAlertController(title: title, message: nil, preferredStyle: .ActionSheet)
+        let alertController = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
         
         // Time Condition.
-        let timeAction = UIAlertAction(title: NSLocalizedString("Time", comment: "Time"), style: .Default) { _ in
-            self.performSegueWithIdentifier(Identifiers.showTimeConditionSegue, sender: self)
+        let timeAction = UIAlertAction(title: NSLocalizedString("Time", comment: "Time"), style: .default) { _ in
+            self.performSegue(withIdentifier: Identifiers.showTimeConditionSegue, sender: self)
         }
         alertController.addAction(timeAction)
         
         // Characteristic trigger.
         let eventActionTitle = NSLocalizedString("Characteristic", comment: "Characteristic")
 
-        let eventAction = UIAlertAction(title: eventActionTitle, style: .Default, handler: { _ in
+        let eventAction = UIAlertAction(title: eventActionTitle, style: .default, handler: { _ in
             if let triggerCreator = self.triggerCreator as? CharacteristicTriggerCreator {
-                triggerCreator.mode = .Condition
+                triggerCreator.mode = .condition
             }
-            self.performSegueWithIdentifier("Select Characteristic", sender: self)
+            self.performSegue(withIdentifier: "Select Characteristic", sender: self)
         })
 
         alertController.addAction(eventAction)
         
         // Cancel.
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: "Cancel"), style: .Cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: "Cancel"), style: .cancel, handler: nil)
         alertController.addAction(cancelAction)
         
         // Present alert.
-        presentViewController(alertController, animated: true, completion: nil)
+        present(alertController, animated: true, completion: nil)
     }
     
     /// - returns:  `true` if the index path is the 'add row'; `false` otherwise.
-    func indexPathIsAdd(indexPath: NSIndexPath) -> Bool {
-        switch sectionForIndex(indexPath.section) {
-            case .Conditions?:
-                return indexPath.row == eventTriggerCreator.conditions.count
+    func indexPathIsAdd(_ indexPath: IndexPath) -> Bool {
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .conditions?:
+                return (indexPath as NSIndexPath).row == eventTriggerCreator.conditions.count
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")

@@ -30,8 +30,8 @@ class ServiceCell: UITableViewCell {
     var service: HMService? {
         didSet {
             if let service = service,
-                    accessory = service.accessory {
-                textLabel?.text = service.name ?? accessory.name
+                    let accessory = service.accessory {
+                textLabel?.text = service.name
                 let accessoryName = accessory.name
                 let roomName = accessory.room!.name
                 if includeAccessoryText {

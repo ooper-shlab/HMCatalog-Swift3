@@ -36,7 +36,7 @@ class HMCatalogViewController: UITableViewController, HMHomeDelegate {
     */
     private func shouldPopViewController() -> Bool {
         if let rootViewController = navigationController?.viewControllers.first
-            where rootViewController == self {
+            , rootViewController == self {
                 return false
         }
 
@@ -44,12 +44,12 @@ class HMCatalogViewController: UITableViewController, HMHomeDelegate {
     }
 
     /// Pops the view controller, if required. Invokes the delegate registration method.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
         if shouldPopViewController() {
             // Pop to root view controller if our home was destroyed while we were away.
-            navigationController?.popToRootViewControllerAnimated(true)
+            _ = navigationController?.popToRootViewController(animated: true)
             return
         }
 

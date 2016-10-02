@@ -15,14 +15,14 @@ enum TimeConditionTableViewSection: Int {
         This section contains the segmented control to
         choose a time condition type.
     */
-    case TimeOrSun
+    case timeOrSun
     
     /**
         This section contains cells to allow the selection
         of 'before', 'after', or 'at'. 'At' is only available
         when the exact time is specified.
     */
-    case BeforeOrAfter
+    case beforeOrAfter
     
     /**
         If the condition type is exact time, this section will
@@ -32,7 +32,7 @@ enum TimeConditionTableViewSection: Int {
         this section will have two cells, one for 'sunrise' and
         one for 'sunset.
     */
-    case Value
+    case value
     
     static let count = 3
 }
@@ -43,7 +43,7 @@ enum TimeConditionTableViewSection: Int {
     The condition can be an exact time, or relative to a solar event.
 */
 enum TimeConditionType: Int {
-    case Time, Sun
+    case time, sun
 }
 
 /**
@@ -52,7 +52,7 @@ enum TimeConditionType: Int {
     This can be sunrise or sunset.
 */
 enum TimeConditionSunState: Int {
-    case Sunrise, Sunset
+    case sunrise, sunset
 }
 
 /**
@@ -61,7 +61,7 @@ enum TimeConditionSunState: Int {
     Conditions can be before, after, or exactly at a given time.
 */
 enum TimeConditionOrder: Int {
-    case Before, After, At
+    case before, after, at
 }
 
 /// A view controller that facilitates the creation of time conditions for triggers.
@@ -92,9 +92,9 @@ class TimeConditionViewController: HMCatalogViewController {
     
     // MARK: Properties
     
-    private var timeType: TimeConditionType = .Time
-    private var order: TimeConditionOrder = .Before
-    private var sunState: TimeConditionSunState = .Sunrise
+    private var timeType: TimeConditionType = .time
+    private var order: TimeConditionOrder = .before
+    private var sunState: TimeConditionSunState = .sunrise
     
     private var datePicker: UIDatePicker?
     
@@ -112,7 +112,7 @@ class TimeConditionViewController: HMCatalogViewController {
     // MARK: Table View Methods
     
     /// - returns:  The number of `TimeConditionTableViewSection`s.
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return TimeConditionTableViewSection.count
     }
     
@@ -120,18 +120,18 @@ class TimeConditionViewController: HMCatalogViewController {
         - returns:  The number rows based on the `TimeConditionTableViewSection`
                     and the `timeType`.
     */
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch TimeConditionTableViewSection(rawValue: section) {
-            case .TimeOrSun?:
+            case .timeOrSun?:
                 return 1
                 
-            case .BeforeOrAfter?:
+            case .beforeOrAfter?:
                 // If we're choosing an exact time, we add the 'At' row.
-                return (timeType == .Time) ? 3 : 2
+                return (timeType == .time) ? 3 : 2
                 
-            case .Value?:
+            case .value?:
                 // Date picker cell or sunrise/sunset selection cells
-                return (timeType == .Time) ? 1 : 2
+                return (timeType == .time) ? 1 : 2
                 
             case nil:
                 fatalError("Unexpected `TimeConditionTableViewSection` raw value.")
@@ -139,19 +139,19 @@ class TimeConditionViewController: HMCatalogViewController {
     }
     
     /// Switches based on the section to generate a cell.
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        switch TimeConditionTableViewSection(rawValue: indexPath.section) {
-            case .TimeOrSun?:
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch TimeConditionTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .timeOrSun?:
                 return self.tableView(tableView, segmentedCellForRowAtIndexPath: indexPath)
                 
-            case .BeforeOrAfter?:
+            case .beforeOrAfter?:
                 return self.tableView(tableView, selectionCellForRowAtIndexPath: indexPath)
                 
-            case .Value?:
+            case .value?:
                 switch timeType {
-                case .Time:
+                case .time:
                     return self.tableView(tableView, datePickerCellForRowAtIndexPath: indexPath)
-                case .Sun:
+                case .sun:
                     return self.tableView(tableView, selectionCellForRowAtIndexPath: indexPath)
                 }
                 
@@ -161,16 +161,16 @@ class TimeConditionViewController: HMCatalogViewController {
     }
     
     /// - returns:  A localized string describing the section.
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch TimeConditionTableViewSection(rawValue: section) {
-            case .TimeOrSun?:
+            case .timeOrSun?:
                 return NSLocalizedString("Condition Type", comment: "Condition Type")
                 
-            case .BeforeOrAfter?:
+            case .beforeOrAfter?:
                 return nil
                 
-            case .Value?:
-                if timeType == .Time {
+            case .value?:
+                if timeType == .time {
                     return NSLocalizedString("Time", comment: "Time")
                 }
                 else {
@@ -183,15 +183,15 @@ class TimeConditionViewController: HMCatalogViewController {
     }
     
     /// - returns:  A localized description for condition type section; `nil` otherwise.
-    override func tableView(tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         switch TimeConditionTableViewSection(rawValue: section) {
-            case .TimeOrSun?:
+            case .timeOrSun?:
                 return NSLocalizedString("Time conditions can relate to specific times or special events, like sunrise and sunset.", comment: "Condition Type Description")
                 
-            case .BeforeOrAfter?:
+            case .beforeOrAfter?:
                 return nil
                 
-            case .Value?:
+            case .value?:
                 return nil
                 
             case nil:
@@ -200,29 +200,29 @@ class TimeConditionViewController: HMCatalogViewController {
     }
     
     /// Updates internal values based on row selection.
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let cell = tableView.cellForRowAtIndexPath(indexPath)!
-        if cell.selectionStyle == .None {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cell = tableView.cellForRow(at: indexPath)!
+        if cell.selectionStyle == .none {
             return
         }
         
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
 
-        switch TimeConditionTableViewSection(rawValue: indexPath.section) {
-            case .TimeOrSun?:
-                timeType = TimeConditionType(rawValue: indexPath.row)!
+        switch TimeConditionTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .timeOrSun?:
+                timeType = TimeConditionType(rawValue: (indexPath as NSIndexPath).row)!
                 reloadDynamicSections()
                 return
                 
-            case .BeforeOrAfter?:
-                order = TimeConditionOrder(rawValue: indexPath.row)!
-                tableView.reloadSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Automatic)
+            case .beforeOrAfter?:
+                order = TimeConditionOrder(rawValue: (indexPath as NSIndexPath).row)!
+                tableView.reloadSections(IndexSet(integer: (indexPath as NSIndexPath).section), with: .automatic)
                 
-            case .Value?:
-                if timeType == .Sun {
-                    sunState = TimeConditionSunState(rawValue: indexPath.row)!
+            case .value?:
+                if timeType == .sun {
+                    sunState = TimeConditionSunState(rawValue: (indexPath as NSIndexPath).row)!
                 }
-                tableView.reloadSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Automatic)
+                tableView.reloadSections(IndexSet(integer: (indexPath as NSIndexPath).section), with: .automatic)
                 
             case nil:
                 fatalError("Unexpected `TimeConditionTableViewSection` raw value.")
@@ -235,17 +235,17 @@ class TimeConditionViewController: HMCatalogViewController {
         Generates a selection cell based on the section.
         Ordering and sun-state sections have selections.
     */
-    private func tableView(tableView: UITableView, selectionCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.selectionCell, forIndexPath: indexPath)
-        switch TimeConditionTableViewSection(rawValue: indexPath.section) {
-            case .BeforeOrAfter?:
-                cell.textLabel?.text = TimeConditionViewController.beforeOrAfterTitles[indexPath.row]
-                cell.accessoryType = (order.rawValue == indexPath.row) ? .Checkmark : .None
+    private func tableView(_ tableView: UITableView, selectionCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.selectionCell, for: indexPath)
+        switch TimeConditionTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .beforeOrAfter?:
+                cell.textLabel?.text = TimeConditionViewController.beforeOrAfterTitles[(indexPath as NSIndexPath).row]
+                cell.accessoryType = (order.rawValue == (indexPath as NSIndexPath).row) ? .checkmark : .none
                 
-            case .Value?:
-                if timeType == .Sun {
-                    cell.textLabel?.text = TimeConditionViewController.sunriseSunsetTitles[indexPath.row]
-                    cell.accessoryType = (sunState.rawValue == indexPath.row) ? .Checkmark : .None
+            case .value?:
+                if timeType == .sun {
+                    cell.textLabel?.text = TimeConditionViewController.sunriseSunsetTitles[(indexPath as NSIndexPath).row]
+                    cell.accessoryType = (sunState.rawValue == (indexPath as NSIndexPath).row) ? .checkmark : .none
                 }
                 
             case nil:
@@ -258,27 +258,27 @@ class TimeConditionViewController: HMCatalogViewController {
     }
     
     /// Generates a date picker cell and sets the internal date picker when created.
-    private func tableView(tableView: UITableView, datePickerCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.timePickerCell, forIndexPath: indexPath) as! TimePickerCell
+    private func tableView(_ tableView: UITableView, datePickerCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.timePickerCell, for: indexPath) as! TimePickerCell
         // Save the date picker so we can get the result later.
         datePicker = cell.datePicker
         return cell
     }
     
     /// Generates a segmented cell and sets its target when created.
-    private func tableView(tableView: UITableView, segmentedCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.segmentedTimeCell, forIndexPath: indexPath) as! SegmentedTimeCell
+    private func tableView(_ tableView: UITableView, segmentedCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.segmentedTimeCell, for: indexPath) as! SegmentedTimeCell
         cell.segmentedControl.selectedSegmentIndex = timeType.rawValue
-        cell.segmentedControl.removeTarget(nil, action: nil, forControlEvents: .AllEvents)
-        cell.segmentedControl.addTarget(self, action: #selector(TimeConditionViewController.segmentedControlDidChange(_:)), forControlEvents: .ValueChanged)
+        cell.segmentedControl.removeTarget(nil, action: nil, for: .allEvents)
+        cell.segmentedControl.addTarget(self, action: #selector(TimeConditionViewController.segmentedControlDidChange(_:)), for: .valueChanged)
         return cell
     }
     
     /// Creates date components from the date picker's date.
-    var dateComponents: NSDateComponents? {
+    var dateComponents: DateComponents? {
         guard let datePicker = datePicker else { return nil }
-        let flags: NSCalendarUnit = [.Hour, .Minute]
-        return NSCalendar.currentCalendar().components(flags, fromDate: datePicker.date)
+        let flags: NSCalendar.Unit = [.hour, .minute]
+        return (Calendar.current as NSCalendar).components(flags, from: datePicker.date)
     }
     
     /**
@@ -286,7 +286,7 @@ class TimeConditionViewController: HMCatalogViewController {
         
         - parameter segmentedControl: The segmented control that changed.
     */
-    func segmentedControlDidChange(segmentedControl: UISegmentedControl) {
+    func segmentedControlDidChange(_ segmentedControl: UISegmentedControl) {
         if let segmentedControlType = TimeConditionType(rawValue: segmentedControl.selectedSegmentIndex) {
             timeType = segmentedControlType
         }
@@ -295,11 +295,11 @@ class TimeConditionViewController: HMCatalogViewController {
     
     /// Reloads the BeforeOrAfter and Value section.
     private func reloadDynamicSections() {
-        if timeType == .Sun && order == .At {
-            order = .Before
+        if timeType == .sun && order == .at {
+            order = .before
         }
-        let reloadIndexSet = NSIndexSet(indexesInRange: NSMakeRange(TimeConditionTableViewSection.BeforeOrAfter.rawValue, 2))
-        tableView.reloadSections(reloadIndexSet, withRowAnimation: .Automatic)
+        let reloadIndexSet = IndexSet(integersIn: NSMakeRange(TimeConditionTableViewSection.beforeOrAfter.rawValue, 2).toRange() ?? 0..<0)
+        tableView.reloadSections(reloadIndexSet, with: .automatic)
     }
     
     // MARK: IBAction Methods
@@ -308,31 +308,31 @@ class TimeConditionViewController: HMCatalogViewController {
         Generates a predicate based on the stored values, adds
         the condition to the trigger, then dismisses the view.
     */
-    @IBAction func saveAndDismiss(sender: UIBarButtonItem) {
+    @IBAction func saveAndDismiss(_ sender: UIBarButtonItem) {
         var predicate: NSPredicate?
         switch timeType {
-            case .Time:
+            case .time:
                 switch order {
-                    case .Before:
-                        predicate = HMEventTrigger.predicateForEvaluatingTriggerOccurringBeforeDateWithComponents(dateComponents!)
+                    case .before:
+                        predicate = HMEventTrigger.predicateForEvaluatingTrigger(occurringBefore: dateComponents!)
                         
-                    case .After:
-                        predicate = HMEventTrigger.predicateForEvaluatingTriggerOccurringAfterDateWithComponents(dateComponents!)
+                    case .after:
+                        predicate = HMEventTrigger.predicateForEvaluatingTrigger(occurringAfter: dateComponents!)
                         
-                    case .At:
-                        predicate = HMEventTrigger.predicateForEvaluatingTriggerOccurringOnDateWithComponents(dateComponents!)
+                    case .at:
+                        predicate = HMEventTrigger.predicateForEvaluatingTrigger(occurringOn: dateComponents!)
                 }
             
-            case .Sun:
-                let significantEventString = (sunState == .Sunrise) ? HMSignificantEventSunrise : HMSignificantEventSunset
+            case .sun:
+                let significantEventString = (sunState == .sunrise) ? HMSignificantEventSunrise : HMSignificantEventSunset
                 switch order {
-                    case .Before:
-                        predicate = HMEventTrigger.predicateForEvaluatingTriggerOccurringBeforeSignificantEvent(significantEventString, applyingOffset: nil)
+                    case .before:
+                        predicate = HMEventTrigger.predicateForEvaluatingTrigger(occurringBefore: significantEventString, applyingOffset: nil)
                         
-                    case .After:
-                        predicate = HMEventTrigger.predicateForEvaluatingTriggerOccurringAfterSignificantEvent(significantEventString, applyingOffset: nil)
+                    case .after:
+                        predicate = HMEventTrigger.predicateForEvaluatingTrigger(occurringAfter: significantEventString, applyingOffset: nil)
                         
-                    case .At:
+                    case .at:
                         // Significant events must be specified 'before' or 'after'.
                         break
                 }
@@ -340,11 +340,11 @@ class TimeConditionViewController: HMCatalogViewController {
         if let predicate = predicate {
             triggerCreator?.addCondition(predicate)
         }
-        dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
     
     /// Cancels the creation of the conditions and exits.
-    @IBAction func dismiss(sender: UIBarButtonItem) {
-        dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func dismiss(_ sender: UIBarButtonItem) {
+        self.dismiss(animated: true, completion: nil)
     }
 }

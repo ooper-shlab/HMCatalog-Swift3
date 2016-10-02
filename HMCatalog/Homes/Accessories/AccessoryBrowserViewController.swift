@@ -13,10 +13,10 @@ import ExternalAccessory
 /// Represents an accessory type and encapsulated accessory.
 enum AccessoryType: Equatable, Nameable {
     /// A HomeKit object
-    case HomeKit(accessory: HMAccessory)
+    case homeKit(accessory: HMAccessory)
     
     /// An external, `EAWiFiUnconfiguredAccessory` object
-    case External(accessory: EAWiFiUnconfiguredAccessory)
+    case external(accessory: EAWiFiUnconfiguredAccessory)
     
     /// The name of the accessory.
     var name: String {
@@ -26,10 +26,10 @@ enum AccessoryType: Equatable, Nameable {
     /// The accessory within the `AccessoryType`.
     var accessory: AnyObject {
         switch self {
-            case .HomeKit(let accessory):
+            case .homeKit(let accessory):
                 return accessory
 
-            case .External(let accessory):
+            case .external(let accessory):
                 return accessory
         }
     }
@@ -70,14 +70,14 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
 
         #if arch(arm)
         // We can't use the ExternalAccessory framework on the iPhone simulator.
-        externalAccessoryBrowser = EAWiFiUnconfiguredAccessoryBrowser(delegate: self, queue: dispatch_get_main_queue())
+        externalAccessoryBrowser = EAWiFiUnconfiguredAccessoryBrowser(delegate: self, queue: DispatchQueue.main)
         #endif
         
         startBrowsing()
     }
     
     /// Reloads the view.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         reloadTable()
     }
@@ -85,16 +85,16 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
     // MARK: IBAction Methods
     
     /// Stops browsing and dismisses the view controller.
-    @IBAction func dismiss(sender: AnyObject) {
+    @IBAction func dismiss(_ sender: AnyObject) {
         stopBrowsing()
-        dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
     
     /// Sets the accessory, home, and delegate of a ModifyAccessoryViewController.
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        super.prepareForSegue(segue, sender: sender)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
 
-        if let sender = sender as? HMAccessory where segue.identifier == Identifiers.addAccessorySegue {
+        if let sender = sender as? HMAccessory , segue.identifier == Identifiers.addAccessorySegue {
             let modifyViewController = segue.intendedDestinationViewController as! ModifyAccessoryViewController
             modifyViewController.accessory = sender
             modifyViewController.delegate = self
@@ -110,7 +110,7 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
         
         - returns:  The number of rows based on the number of displayed accessories.
     */
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let rows = displayedAccessories.count
 
         if rows == 0 {
@@ -128,16 +128,16 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
         - returns:  Creates a cell that lists an accessory, and if it hasn't been added to the home,
                     shows a disclosure indicator instead of a checkmark.
     */
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let accessoryType = displayedAccessories[indexPath.row]
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let accessoryType = displayedAccessories[(indexPath as NSIndexPath).row]
 
         var reuseIdentifier = Identifiers.accessoryCell
         
-        if case let .HomeKit(hmAccessory) = accessoryType where addedAccessories.contains(hmAccessory) {
+        if case let .homeKit(hmAccessory) = accessoryType , addedAccessories.contains(hmAccessory) {
             reuseIdentifier = Identifiers.addedAccessoryCell
         }
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         cell.textLabel?.text = accessoryType.name
 
         if let accessory = accessoryType.accessory as? HMAccessory {
@@ -151,13 +151,13 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
     }
     
     /// Configures the accessory based on its type.
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        switch displayedAccessories[indexPath.row] {
-            case .HomeKit(let accessory):
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch displayedAccessories[(indexPath as NSIndexPath).row] {
+            case .homeKit(let accessory):
                 configureAccessory(accessory)
 
-            case .External(let accessory):
-                externalAccessoryBrowser?.configureAccessory(accessory, withConfigurationUIOnViewController: self)
+            case .external(let accessory):
+                externalAccessoryBrowser?.configureAccessory(accessory, withConfigurationUIOn: self)
         }
     }
     
@@ -166,7 +166,7 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
     /// Starts browsing on both HomeKit and External accessory browsers.
     private func startBrowsing(){
         accessoryBrowser.startSearchingForNewAccessories()
-        externalAccessoryBrowser?.startSearchingForUnconfiguredAccessoriesMatchingPredicate(nil)
+        externalAccessoryBrowser?.startSearchingForUnconfiguredAccessories(matching: nil)
     }
     
     /// Stops browsing on both HomeKit and External accessory browsers.
@@ -183,10 +183,10 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
     */
     func allAccessories() -> [AccessoryType] {
         var accessories = [AccessoryType]()
-        accessories += accessoryBrowser.discoveredAccessories.map { .HomeKit(accessory: $0) }
+        accessories += accessoryBrowser.discoveredAccessories.map { .homeKit(accessory: $0) }
 
         accessories += addedAccessories.flatMap { addedAccessory in
-            let accessoryType = AccessoryType.HomeKit(accessory: addedAccessory)
+            let accessoryType = AccessoryType.homeKit(accessory: addedAccessory)
             
             return accessories.contains(accessoryType) ? nil : accessoryType
         }
@@ -195,7 +195,7 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
             let unconfiguredAccessoriesArray = Array(external)
 
             accessories += unconfiguredAccessoriesArray.flatMap { addedAccessory in
-                let accessoryType = AccessoryType.External(accessory: addedAccessory)
+                let accessoryType = AccessoryType.external(accessory: addedAccessory)
                 
                 return accessories.contains(accessoryType) ? nil : accessoryType
             }
@@ -211,9 +211,9 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
     }
     
     /// Sends the accessory to the next view.
-    func configureAccessory(accessory: HMAccessory) {
-        if displayedAccessories.contains(.HomeKit(accessory: accessory)) {
-            performSegueWithIdentifier(Identifiers.addAccessorySegue, sender: accessory)
+    func configureAccessory(_ accessory: HMAccessory) {
+        if displayedAccessories.contains(.homeKit(accessory: accessory)) {
+            performSegue(withIdentifier: Identifiers.addAccessorySegue, sender: accessory)
         }
     }
     
@@ -225,9 +225,9 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
         - returns:  An `HMAccessory?` from the search; `nil` if
                     the accessory could not be found.
     */
-    func unconfiguredHomeKitAccessoryWithName(name: String) -> HMAccessory? {
+    func unconfiguredHomeKitAccessoryWithName(_ name: String) -> HMAccessory? {
         for type in displayedAccessories {
-            if case let .HomeKit(accessory) = type where accessory.name == name {
+            if case let .homeKit(accessory) = type , accessory.name == name {
                 return accessory
             }
         }
@@ -237,7 +237,7 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
     // MARK: ModifyAccessoryDelegate Methods
     
     /// Adds the accessory to the internal array and reloads the views.
-    func accessoryViewController(accessoryViewController: ModifyAccessoryViewController, didSaveAccessory accessory: HMAccessory) {
+    func accessoryViewController(_ accessoryViewController: ModifyAccessoryViewController, didSaveAccessory accessory: HMAccessory) {
         addedAccessories.append(accessory)
         reloadTable()
     }
@@ -246,21 +246,21 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
     
     // Any updates to the external accessory browser causes a reload in the table view.
     
-    func accessoryBrowser(browser: EAWiFiUnconfiguredAccessoryBrowser, didFindUnconfiguredAccessories accessories: Set<EAWiFiUnconfiguredAccessory>) {
+    func accessoryBrowser(_ browser: EAWiFiUnconfiguredAccessoryBrowser, didFindUnconfiguredAccessories accessories: Set<EAWiFiUnconfiguredAccessory>) {
         reloadTable()
     }
     
-    func accessoryBrowser(browser: EAWiFiUnconfiguredAccessoryBrowser, didRemoveUnconfiguredAccessories accessories: Set<EAWiFiUnconfiguredAccessory>) {
+    func accessoryBrowser(_ browser: EAWiFiUnconfiguredAccessoryBrowser, didRemoveUnconfiguredAccessories accessories: Set<EAWiFiUnconfiguredAccessory>) {
         reloadTable()
     }
     
-    func accessoryBrowser(browser: EAWiFiUnconfiguredAccessoryBrowser, didUpdateState state: EAWiFiUnconfiguredAccessoryBrowserState) {
+    func accessoryBrowser(_ browser: EAWiFiUnconfiguredAccessoryBrowser, didUpdate state: EAWiFiUnconfiguredAccessoryBrowserState) {
         reloadTable()
     }
     
     /// If the configuration was successful, presents the 'Add Accessory' view.
-    func accessoryBrowser(browser: EAWiFiUnconfiguredAccessoryBrowser, didFinishConfiguringAccessory accessory: EAWiFiUnconfiguredAccessory, withStatus status: EAWiFiUnconfiguredAccessoryConfigurationStatus) {
-        if status != .Success {
+    func accessoryBrowser(_ browser: EAWiFiUnconfiguredAccessoryBrowser, didFinishConfiguringAccessory accessory: EAWiFiUnconfiguredAccessory, with status: EAWiFiUnconfiguredAccessoryConfigurationStatus) {
+        if status != .success {
             return
         }
         
@@ -275,17 +275,17 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
         Inserts the accessory into the internal array and inserts the
         row into the table view.
     */
-    func accessoryBrowser(browser: HMAccessoryBrowser, didFindNewAccessory accessory: HMAccessory) {
-        let newAccessory = AccessoryType.HomeKit(accessory: accessory)
+    func accessoryBrowser(_ browser: HMAccessoryBrowser, didFindNewAccessory accessory: HMAccessory) {
+        let newAccessory = AccessoryType.homeKit(accessory: accessory)
         if displayedAccessories.contains(newAccessory)  {
             return
         }
         displayedAccessories.append(newAccessory)
         displayedAccessories = displayedAccessories.sortByLocalizedName()
 
-        if let newIndex = displayedAccessories.indexOf(newAccessory) {
-            let newIndexPath = NSIndexPath(forRow: newIndex, inSection: 0)
-            tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Automatic)
+        if let newIndex = displayedAccessories.index(of: newAccessory) {
+            let newIndexPath = IndexPath(row: newIndex, section: 0)
+            tableView.insertRows(at: [newIndexPath], with: .automatic)
         }
     }
     
@@ -293,15 +293,15 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
         Removes the accessory from the internal array and deletes the
         row from the table view.
     */
-    func accessoryBrowser(browser: HMAccessoryBrowser, didRemoveNewAccessory accessory: HMAccessory) {
-        let removedAccessory = AccessoryType.HomeKit(accessory: accessory)
+    func accessoryBrowser(_ browser: HMAccessoryBrowser, didRemoveNewAccessory accessory: HMAccessory) {
+        let removedAccessory = AccessoryType.homeKit(accessory: accessory)
         if !displayedAccessories.contains(removedAccessory)  {
             return
         }
-        if let removedIndex = displayedAccessories.indexOf(removedAccessory) {
-            let removedIndexPath = NSIndexPath(forRow: removedIndex, inSection: 0)
-            displayedAccessories.removeAtIndex(removedIndex)
-            tableView.deleteRowsAtIndexPaths([removedIndexPath], withRowAnimation: .Automatic)
+        if let removedIndex = displayedAccessories.index(of: removedAccessory) {
+            let removedIndexPath = IndexPath(row: removedIndex, section: 0)
+            displayedAccessories.remove(at: removedIndex)
+            tableView.deleteRows(at: [removedIndexPath], with: .automatic)
         }
     }
 }

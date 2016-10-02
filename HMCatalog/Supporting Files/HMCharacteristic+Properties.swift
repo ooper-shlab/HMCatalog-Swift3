@@ -11,7 +11,7 @@ import HomeKit
 extension HMCharacteristic {
     
     private struct Constants {
-        static let valueFormatter = NSNumberFormatter()
+        static let valueFormatter = NumberFormatter()
         static let numericFormats = [
             HMCharacteristicMetadataFormatInt,
             HMCharacteristicMetadataFormatFloat,
@@ -30,7 +30,7 @@ extension HMCharacteristic {
         
         - returns: A string representing the value in a localized way, e.g. `"24%"` or `"354º"`
     */
-    func localizedDescriptionForValue(value: AnyObject) -> String {
+    func localizedDescriptionForValue(_ value: AnyObject) -> String {
         if self.isWriteOnly {
             return NSLocalizedString("Write-Only Characteristic", comment: "Write-Only Characteristic")
         }
@@ -46,7 +46,7 @@ extension HMCharacteristic {
             
             if let stepValue = self.metadata?.stepValue {
                 Constants.valueFormatter.minimumFractionDigits = Int(log10(1.0 / stepValue.doubleValue))
-                if let string = Constants.valueFormatter.stringFromNumber(number) {
+                if let string = Constants.valueFormatter.string(from: NSNumber(value: number)) {
                     return string + self.localizedUnitDecoration
                 }
             }
@@ -59,10 +59,10 @@ extension HMCharacteristic {
         
         - returns: An optional, localized string for the value.
     */
-    func predeterminedValueDescriptionForNumber(number: Int) -> String? {
+    func predeterminedValueDescriptionForNumber(_ number: Int) -> String? {
         switch self.characteristicType {
             case HMCharacteristicTypePowerState, HMCharacteristicTypeInputEvent, HMCharacteristicTypeOutputState:
-                if Bool(number) {
+                if number != 0 {
                     return NSLocalizedString("On", comment: "On")
                 }
                 else {
@@ -70,7 +70,7 @@ extension HMCharacteristic {
                 }
             
             case HMCharacteristicTypeOutletInUse, HMCharacteristicTypeMotionDetected, HMCharacteristicTypeAdminOnlyAccess, HMCharacteristicTypeAudioFeedback, HMCharacteristicTypeObstructionDetected:
-                if Bool(number) {
+                if number != 0 {
                     return NSLocalizedString("Yes", comment: "Yes")
                 }
                 else {
@@ -80,19 +80,19 @@ extension HMCharacteristic {
             case HMCharacteristicTypeTargetDoorState, HMCharacteristicTypeCurrentDoorState:
                 if let doorState = HMCharacteristicValueDoorState(rawValue: number) {
                     switch doorState {
-                        case .Open:
+                        case .open:
                             return NSLocalizedString("Open", comment: "Open")
                         
-                        case .Opening:
+                        case .opening:
                             return NSLocalizedString("Opening", comment: "Opening")
                         
-                        case .Closed:
+                        case .closed:
                             return NSLocalizedString("Closed", comment: "Closed")
                         
-                        case .Closing:
+                        case .closing:
                             return NSLocalizedString("Closing", comment: "Closing")
                         
-                        case .Stopped:
+                        case .stopped:
                             return NSLocalizedString("Stopped", comment: "Stopped")
                     }
                 }
@@ -100,16 +100,16 @@ extension HMCharacteristic {
             case HMCharacteristicTypeTargetHeatingCooling:
                 if let mode = HMCharacteristicValueHeatingCooling(rawValue: number) {
                     switch mode {
-                        case .Off:
+                        case .off:
                             return NSLocalizedString("Off", comment: "Off")
                             
-                        case .Heat:
+                        case .heat:
                             return NSLocalizedString("Heat", comment: "Heat")
                             
-                        case .Cool:
+                        case .cool:
                             return NSLocalizedString("Cool", comment: "Cool")
                             
-                        case .Auto:
+                        case .auto:
                             return NSLocalizedString("Auto", comment: "Auto")
                     }
                 }
@@ -117,16 +117,16 @@ extension HMCharacteristic {
             case HMCharacteristicTypeCurrentHeatingCooling:
                 if let mode = HMCharacteristicValueHeatingCooling(rawValue: number) {
                     switch mode {
-                        case .Off:
+                        case .off:
                             return NSLocalizedString("Off", comment: "Off")
                         
-                        case .Heat:
+                        case .heat:
                             return NSLocalizedString("Heating", comment: "Heating")
                         
-                        case .Cool:
+                        case .cool:
                             return NSLocalizedString("Cooling", comment: "Cooling")
                         
-                        case .Auto:
+                        case .auto:
                             return NSLocalizedString("Auto", comment: "Auto")
                     }
                 }
@@ -134,16 +134,16 @@ extension HMCharacteristic {
             case HMCharacteristicTypeTargetLockMechanismState, HMCharacteristicTypeCurrentLockMechanismState:
                 if let lockState = HMCharacteristicValueLockMechanismState(rawValue: number) {
                     switch lockState {
-                        case .Unsecured:
+                        case .unsecured:
                             return NSLocalizedString("Unsecured", comment: "Unsecured")
                         
-                        case .Secured:
+                        case .secured:
                             return NSLocalizedString("Secured", comment: "Secured")
                         
-                        case .Unknown:
+                        case .unknown:
                             return NSLocalizedString("Unknown", comment: "Unknown")
                         
-                        case .Jammed:
+                        case .jammed:
                             return NSLocalizedString("Jammed", comment: "Jammed")
                     }
                 }
@@ -151,10 +151,10 @@ extension HMCharacteristic {
             case HMCharacteristicTypeTemperatureUnits:
                 if let unit = HMCharacteristicValueTemperatureUnit(rawValue: number) {
                     switch unit {
-                        case .Celsius:
+                        case .celsius:
                             return NSLocalizedString("Celsius", comment: "Celsius")
                         
-                        case .Fahrenheit:
+                        case .fahrenheit:
                             return NSLocalizedString("Fahrenheit", comment: "Fahrenheit")
                     }
                 }
@@ -162,37 +162,37 @@ extension HMCharacteristic {
             case HMCharacteristicTypeLockMechanismLastKnownAction:
                 if let lastKnownAction = HMCharacteristicValueLockMechanismLastKnownAction(rawValue: number) {
                     switch lastKnownAction {
-                        case .SecuredUsingPhysicalMovementInterior:
+                        case .securedUsingPhysicalMovementInterior:
                             return NSLocalizedString("Interior Secured", comment: "Interior Secured")
                         
-                        case .UnsecuredUsingPhysicalMovementInterior:
+                        case .unsecuredUsingPhysicalMovementInterior:
                             return NSLocalizedString("Exterior Unsecured", comment: "Exterior Unsecured")
                         
-                        case .SecuredUsingPhysicalMovementExterior:
+                        case .securedUsingPhysicalMovementExterior:
                             return NSLocalizedString("Exterior Secured", comment: "Exterior Secured")
                         
-                        case .UnsecuredUsingPhysicalMovementExterior:
+                        case .unsecuredUsingPhysicalMovementExterior:
                             return NSLocalizedString("Exterior Unsecured", comment: "Exterior Unsecured")
                         
-                        case .SecuredWithKeypad:
+                        case .securedWithKeypad:
                             return NSLocalizedString("Keypad Secured", comment: "Keypad Secured")
                         
-                        case .UnsecuredWithKeypad:
+                        case .unsecuredWithKeypad:
                             return NSLocalizedString("Keypad Unsecured", comment: "Keypad Unsecured")
                         
-                        case .SecuredRemotely:
+                        case .securedRemotely:
                             return NSLocalizedString("Secured Remotely", comment: "Secured Remotely")
                         
-                        case .UnsecuredRemotely:
+                        case .unsecuredRemotely:
                             return NSLocalizedString("Unsecured Remotely", comment: "Unsecured Remotely")
                         
-                        case .SecuredWithAutomaticSecureTimeout:
+                        case .securedWithAutomaticSecureTimeout:
                             return NSLocalizedString("Secured Automatically", comment: "Secured Automatically")
                         
-                        case .SecuredUsingPhysicalMovement:
+                        case .securedUsingPhysicalMovement:
                             return NSLocalizedString("Secured Using Physical Movement", comment: "Secured Using Physical Movement")
                         
-                        case .UnsecuredUsingPhysicalMovement:
+                        case .unsecuredUsingPhysicalMovement:
                             return NSLocalizedString("Unsecured Using Physical Movement", comment: "Unsecured Using Physical Movement")
                     }
                 }
@@ -200,10 +200,10 @@ extension HMCharacteristic {
             case HMCharacteristicTypeRotationDirection:
                 if let rotationDirection = HMCharacteristicValueRotationDirection(rawValue: number) {
                     switch rotationDirection {
-                        case .Clockwise:
+                        case .clockwise:
                             return NSLocalizedString("Clockwise", comment: "Clockwise")
                         
-                        case .CounterClockwise:
+                        case .counterClockwise:
                             return NSLocalizedString("Counter Clockwise", comment: "Counter Clockwise")
                     }
                 }
@@ -211,10 +211,10 @@ extension HMCharacteristic {
             case HMCharacteristicTypeAirParticulateSize:
                 if let size = HMCharacteristicValueAirParticulateSize(rawValue: number) {
                     switch size {
-                        case .Size10:
+                        case .size10:
                             return NSLocalizedString("Size 10", comment: "Size 10")
                         
-                        case .Size2_5:
+                        case .size2_5:
                             return NSLocalizedString("Size 2.5", comment: "Size 2.5")
                     }
                 }
@@ -222,13 +222,13 @@ extension HMCharacteristic {
             case HMCharacteristicTypePositionState:
                 if let state = HMCharacteristicValuePositionState(rawValue: number) {
                     switch state {
-                        case .Opening:
+                        case .opening:
                             return NSLocalizedString("Opening", comment: "Opening")
                         
-                        case .Closing:
+                        case .closing:
                             return NSLocalizedString("Closing", comment: "Closing")
                         
-                        case .Stopped:
+                        case .stopped:
                             return NSLocalizedString("Stopped", comment: "Stopped")
                     }
                 }
@@ -236,19 +236,19 @@ extension HMCharacteristic {
             case HMCharacteristicTypeCurrentSecuritySystemState:
                 if let state = HMCharacteristicValueCurrentSecuritySystemState(rawValue: number) {
                     switch state {
-                        case .AwayArm:
+                        case .awayArm:
                             return NSLocalizedString("Away", comment: "Away")
                             
-                        case .StayArm:
+                        case .stayArm:
                             return NSLocalizedString("Home", comment: "Home")
                             
-                        case .NightArm:
+                        case .nightArm:
                             return NSLocalizedString("Night", comment: "Night")
                             
-                        case .Disarmed:
+                        case .disarmed:
                             return NSLocalizedString("Disarm", comment: "Disarm")
                         
-                        case .Triggered:
+                        case .triggered:
                             return NSLocalizedString("Triggered", comment: "Triggered")
                     }
                 }
@@ -256,16 +256,16 @@ extension HMCharacteristic {
             case HMCharacteristicTypeTargetSecuritySystemState:
                 if let state = HMCharacteristicValueTargetSecuritySystemState(rawValue: number) {
                     switch state {
-                        case .AwayArm:
+                        case .awayArm:
                             return NSLocalizedString("Away", comment: "Away")
                         
-                        case .StayArm:
+                        case .stayArm:
                             return NSLocalizedString("Home", comment: "Home")
                         
-                        case .NightArm:
+                        case .nightArm:
                             return NSLocalizedString("Night", comment: "Night")
                         
-                        case .Disarm:
+                        case .disarm:
                             return NSLocalizedString("Disarm", comment: "Disarm")
                     }
                 }
@@ -277,13 +277,13 @@ extension HMCharacteristic {
     }
     
     var supportsEventNotification: Bool {
-        return self.properties.contains(HMCharacteristicPropertySupportsEventNotification)
+        return self.properties.contains(NSNotification.Name.HMCharacteristicPropertySupportsEvent.rawValue)
     }
     
     /// - returns:  A string representing the value in a localized way, e.g. `"24%"` or `"354º"`
     var localizedValueDescription: String {
         if let value = value {
-            return self.localizedDescriptionForValue(value)
+            return self.localizedDescriptionForValue(value as AnyObject)
         }
         return ""
     }
@@ -316,10 +316,10 @@ extension HMCharacteristic {
         
         var localizedDescription: NSString? = nil
         if isReadOnly {
-            localizedDescription = NSLocalizedString("Read Only", comment: "Read Only")
+            localizedDescription = NSLocalizedString("Read Only", comment: "Read Only") as NSString?
         }
         else if isWriteOnly {
-            localizedDescription = NSLocalizedString("Write Only", comment: "Write Only")
+            localizedDescription = NSLocalizedString("Write Only", comment: "Write Only") as NSString?
         }
         
         if let localizedDescription = localizedDescription {
@@ -397,7 +397,7 @@ extension HMCharacteristic {
                     `((greater - lesser) + 1)`, and this takes step value into account.
     */
     var numberOfChoices: Int {
-        guard let metadata = metadata, minimumValue = metadata.minimumValue as? Int else { return 0 }
+        guard let metadata = metadata, let minimumValue = metadata.minimumValue as? Int else { return 0 }
         guard let maximumValue = metadata.maximumValue as? Int else { return 0 }
         var range = maximumValue - minimumValue
         if let stepValue = metadata.stepValue as? Double {
@@ -409,10 +409,10 @@ extension HMCharacteristic {
     /// - returns:  All of the possible values that this characteristic can contain.
     var allPossibleValues: [AnyObject]? {
         guard self.isInteger else { return nil }
-        guard let metadata = metadata, stepValue = metadata.stepValue as? Double else { return nil }
+        guard let metadata = metadata, let stepValue = metadata.stepValue as? Double else { return nil }
         let choices = Array(0..<self.numberOfChoices)
         return choices.map { choice in
-            Int(Double(choice) * stepValue)
+            Int(Double(choice) * stepValue) as NSNumber
         }
     }
     

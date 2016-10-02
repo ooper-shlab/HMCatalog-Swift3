@@ -43,7 +43,7 @@ class ControlsTableViewDataSource: NSObject, UITableViewDataSource {
     func reloadTable() {
         if let home = home {
             serviceTable = home.serviceTable
-            sortedKeys = serviceTable!.keys.sort()
+            sortedKeys = serviceTable!.keys.sorted()
             tableView.reloadData()
         }
         else {
@@ -55,11 +55,11 @@ class ControlsTableViewDataSource: NSObject, UITableViewDataSource {
     }
     
     /// - returns:  The localized description of the service type for that section.
-    func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return sortedKeys?[section]
     }
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return sortedKeys?.count ?? 0
     }
     
@@ -78,17 +78,17 @@ class ControlsTableViewDataSource: NSObject, UITableViewDataSource {
     }
     
     /// - returns:  The number of services matching the service type in that section.
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return serviceTable![sortedKeys![section]]!.count
     }
     
     /// - returns: A `ServiceCell` set for the service at the provided index path.
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let service = serviceForIndexPath(indexPath)!
 
-        let reuseIdentifier = service.accessory!.reachable ? Identifiers.serviceCell : Identifiers.unreachableServiceCell
+        let reuseIdentifier = service.accessory!.isReachable ? Identifiers.serviceCell : Identifiers.unreachableServiceCell
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath) as! ServiceCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! ServiceCell
         
         cell.service = service
         
@@ -96,11 +96,11 @@ class ControlsTableViewDataSource: NSObject, UITableViewDataSource {
     }
     
     /// - returns:  The service represented at the index path in the table.
-    func serviceForIndexPath(indexPath: NSIndexPath) -> HMService? {
+    func serviceForIndexPath(_ indexPath: IndexPath) -> HMService? {
         if let sortedKeys = sortedKeys,
-               serviceTable = serviceTable,
-                services = serviceTable[sortedKeys[indexPath.section]] {
-            return services[indexPath.row]
+               let serviceTable = serviceTable,
+                let services = serviceTable[sortedKeys[(indexPath as NSIndexPath).section]] {
+            return services[(indexPath as NSIndexPath).row]
         }
 
         return nil

@@ -12,7 +12,7 @@ import HomeKit
 
 /// Represents table view sections of the `ActionSetViewController`.
 enum ActionSetTableViewSection: Int {
-    case Name, Actions, Accessories
+    case name, actions, accessories
 }
 
 /**
@@ -52,9 +52,9 @@ class ActionSetViewController: HMCatalogViewController {
         actionSetCreator = ActionSetCreator(actionSet: actionSet, home: home)
         displayedAccessories = home.sortedControlAccessories
 
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Identifiers.accessoryCell)
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Identifiers.unreachableAccessoryCell)
-        tableView.registerClass(ActionCell.self, forCellReuseIdentifier: Identifiers.actionCell)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: Identifiers.accessoryCell)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: Identifiers.unreachableAccessoryCell)
+        tableView.register(ActionCell.self, forCellReuseIdentifier: Identifiers.actionCell)
         
         tableView.rowHeight = UITableViewAutomaticDimension
         
@@ -66,40 +66,40 @@ class ActionSetViewController: HMCatalogViewController {
         }
         
         if !home.isAdmin {
-            nameField.enabled = false
+            nameField.isEnabled = false
         }
     }
     
     /// Reloads the data and view.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tableView.reloadData()
         enableSaveButtonIfNecessary()
     }
     
     /// Dismisses the view controller if our data is invalid.
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if shouldPopViewController() {
-            dismissViewControllerAnimated(true, completion: nil)
+            self.dismiss(animated: true, completion: nil)
         }
     }
     
     /// Dismisses the keyboard when we dismiss.
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         resignFirstResponder()
     }
     
     /// Passes our accessory into the `ServicesViewController`.
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        super.prepareForSegue(segue, sender: sender)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
         if segue.identifier == Identifiers.showServiceSegue {
             let servicesViewController = segue.intendedDestinationViewController as! ServicesViewController
             servicesViewController.onlyShowsControlServices = true
             servicesViewController.cellDelegate = actionSetCreator
 
-            let index = tableView.indexPathForCell(sender as! UITableViewCell)!.row
+            let index = (tableView.indexPath(for: sender as! UITableViewCell)! as NSIndexPath).row
             
             servicesViewController.accessory = displayedAccessories[index]
             servicesViewController.cellDelegate = actionSetCreator
@@ -110,15 +110,15 @@ class ActionSetViewController: HMCatalogViewController {
     
     /// Dismisses the view controller.
     @IBAction func dismiss() {
-        dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
     
     /// Saves the action set, adds it to the home, and dismisses the view.
     @IBAction func saveAndDismiss() {
-        saveButton.enabled = false
+        saveButton.isEnabled = false
 
-        actionSetCreator.saveActionSetWithName(trimmedName) { error in
-            self.saveButton.enabled = true
+        actionSetCreator.saveActionSetWithName(trimmedName as NSString) { error in
+            self.saveButton.isEnabled = true
         
             if let error = error {
                 self.displayError(error)
@@ -130,14 +130,14 @@ class ActionSetViewController: HMCatalogViewController {
     }
     
     /// Prompts an update to the save button enabled state.
-    @IBAction func nameFieldDidChange(field: UITextField) {
+    @IBAction func nameFieldDidChange(_ field: UITextField) {
         enableSaveButtonIfNecessary()
     }
     
     // MARK: Table View Methods
     
     /// We do not allow the creation of action sets in a shared home.
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return home.isAdmin ? 3 : 2
     }
     
@@ -145,15 +145,15 @@ class ActionSetViewController: HMCatalogViewController {
         - returns:  In the Actions section: the number of actions this set will contain upon saving.
                     In the Accessories section: The number of accessories in the home.
     */
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch ActionSetTableViewSection(rawValue: section) {
-            case .Name?:
+            case .name?:
                 return super.tableView(tableView, numberOfRowsInSection: section)
                 
-            case .Actions?:
+            case .actions?:
                 return max(actionSetCreator.allCharacteristics.count, 1)
                 
-            case .Accessories?:
+            case .accessories?:
                 return displayedAccessories.count
                 
             case nil:
@@ -167,37 +167,37 @@ class ActionSetViewController: HMCatalogViewController {
         expecting 1 row per section, just call the super class's implementation 
         for the first row.
     */
-    override func tableView(tableView: UITableView, indentationLevelForRowAtIndexPath indexPath: NSIndexPath) -> Int {
-        return super.tableView(tableView, indentationLevelForRowAtIndexPath: NSIndexPath(forRow: 0, inSection: indexPath.section))
+    override func tableView(_ tableView: UITableView, indentationLevelForRowAt indexPath: IndexPath) -> Int {
+        return super.tableView(tableView, indentationLevelForRowAt: IndexPath(row: 0, section: (indexPath as NSIndexPath).section))
     }
     
     /// Removes the action associated with the index path.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            let characteristic = actionSetCreator.allCharacteristics[indexPath.row]
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let characteristic = actionSetCreator.allCharacteristics[(indexPath as NSIndexPath).row]
             actionSetCreator.removeTargetValueForCharacteristic(characteristic) {
                 if self.actionSetCreator.containsActions {
-                    tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                    tableView.deleteRows(at: [indexPath], with: .automatic)
                 }
                 else {
-                    tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                    tableView.reloadRows(at: [indexPath], with: .automatic)
                 }
             }
         }
     }
     
     /// - returns:  `true` for the Actions section; `false` otherwise.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        return ActionSetTableViewSection(rawValue: indexPath.section) == .Actions && home.isAdmin
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return ActionSetTableViewSection(rawValue: (indexPath as NSIndexPath).section) == .actions && home.isAdmin
     }
     
     /// - returns:  `UITableViewAutomaticDimension` for dynamic sections, otherwise the superclass's implementation.
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        switch ActionSetTableViewSection(rawValue: indexPath.section) {
-            case .Name?:
-                return super.tableView(tableView, heightForRowAtIndexPath: indexPath)
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        switch ActionSetTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .name?:
+                return super.tableView(tableView, heightForRowAt: indexPath)
                 
-            case .Actions?, .Accessories?:
+            case .actions?, .accessories?:
                 return UITableViewAutomaticDimension
                 
             case nil:
@@ -206,20 +206,20 @@ class ActionSetViewController: HMCatalogViewController {
     }
     
     /// - returns:  An action cell for the actions section, an accessory cell for the accessory section, or the superclass's implementation.
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        switch ActionSetTableViewSection(rawValue: indexPath.section) {
-            case .Name?:
-                return super.tableView(tableView, cellForRowAtIndexPath: indexPath)
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch ActionSetTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .name?:
+                return super.tableView(tableView, cellForRowAt: indexPath)
                 
-            case .Actions?:
+            case .actions?:
                 if actionSetCreator.containsActions {
                     return self.tableView(tableView, actionCellForRowAtIndexPath: indexPath)
                 }
                 else {
-                    return super.tableView(tableView, cellForRowAtIndexPath: indexPath)
+                    return super.tableView(tableView, cellForRowAt: indexPath)
                 }
                 
-            case .Accessories?:
+            case .accessories?:
                 return self.tableView(tableView, accessoryCellForRowAtIndexPath: indexPath)
             
             case nil:
@@ -231,12 +231,12 @@ class ActionSetViewController: HMCatalogViewController {
     
     /// Enables the save button if there is a valid name and at least one action.
     private func enableSaveButtonIfNecessary() {
-        saveButton.enabled = home.isAdmin && trimmedName.characters.count > 0 && actionSetCreator.containsActions
+        saveButton.isEnabled = home.isAdmin && trimmedName.characters.count > 0 && actionSetCreator.containsActions
     }
     
     /// - returns:  The contents of the nameField, with whitespace trimmed from the beginning and end.
     private var trimmedName: String {
-        return nameField.text!.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        return nameField.text!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
     
     /**
@@ -252,9 +252,9 @@ class ActionSetViewController: HMCatalogViewController {
     }
     
     /// - returns:  An `ActionCell` instance with the target value for the characteristic at the specified index path.
-    private func tableView(tableView: UITableView, actionCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.actionCell, forIndexPath: indexPath) as! ActionCell
-        let characteristic = actionSetCreator.allCharacteristics[indexPath.row] as HMCharacteristic
+    private func tableView(_ tableView: UITableView, actionCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.actionCell, for: indexPath) as! ActionCell
+        let characteristic = actionSetCreator.allCharacteristics[(indexPath as NSIndexPath).row] as HMCharacteristic
 
         if let target = actionSetCreator.targetValueForCharacteristic(characteristic) {
             cell.setCharacteristic(characteristic, targetValue: target)
@@ -264,7 +264,7 @@ class ActionSetViewController: HMCatalogViewController {
     }
     
     /// - returns:  An Accessory cell that contains an accessory's name.
-    private func tableView(tableView: UITableView, accessoryCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    private func tableView(_ tableView: UITableView, accessoryCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         /*
             These cells are static, the identifiers are defined in the Storyboard,
             but they're not recognized here. In viewDidLoad:, we're registering 
@@ -273,35 +273,35 @@ class ActionSetViewController: HMCatalogViewController {
             are just for reference.
         */
         
-        let accessory = displayedAccessories[indexPath.row]
-        let cellIdentifier = accessory.reachable ? Identifiers.accessoryCell : Identifiers.unreachableAccessoryCell
+        let accessory = displayedAccessories[(indexPath as NSIndexPath).row]
+        let cellIdentifier = accessory.isReachable ? Identifiers.accessoryCell : Identifiers.unreachableAccessoryCell
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
         cell.textLabel?.text = accessory.name
         
-        if accessory.reachable {
-            cell.textLabel?.textColor = UIColor.darkTextColor()
-            cell.accessoryType = .DisclosureIndicator
-            cell.selectionStyle = .Default
+        if accessory.isReachable {
+            cell.textLabel?.textColor = UIColor.darkText
+            cell.accessoryType = .disclosureIndicator
+            cell.selectionStyle = .default
         }
         else {
-            cell.textLabel?.textColor = UIColor.lightGrayColor()
-            cell.accessoryType = .None
-            cell.selectionStyle = .None
+            cell.textLabel?.textColor = UIColor.lightGray
+            cell.accessoryType = .none
+            cell.selectionStyle = .none
         }
         
         return cell
     }
     
     /// Shows the services in the selected accessory.
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let cell = tableView.cellForRowAtIndexPath(indexPath)!
-        if cell.selectionStyle == .None {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cell = tableView.cellForRow(at: indexPath)!
+        if cell.selectionStyle == .none {
             return
         }
 
-        if ActionSetTableViewSection(rawValue: indexPath.section) == .Accessories {
-            performSegueWithIdentifier(Identifiers.showServiceSegue, sender: cell)
+        if ActionSetTableViewSection(rawValue: (indexPath as NSIndexPath).section) == .accessories {
+            performSegue(withIdentifier: Identifiers.showServiceSegue, sender: cell)
         }
     }
     
@@ -311,9 +311,9 @@ class ActionSetViewController: HMCatalogViewController {
         Pops the view controller if our configuration is invalid;
         reloads the view otherwise.
     */
-    func home(home: HMHome, didRemoveAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didRemoveAccessory accessory: HMAccessory) {
         if shouldPopViewController() {
-            dismissViewControllerAnimated(true, completion: nil)
+            self.dismiss(animated: true, completion: nil)
         }
         else {
             tableView.reloadData()
@@ -321,14 +321,14 @@ class ActionSetViewController: HMCatalogViewController {
     }
     
     /// Reloads the table view data.
-    func home(home: HMHome, didAddAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didAddAccessory accessory: HMAccessory) {
         tableView.reloadData()
     }
     
     /// If our action set was removed, dismiss the view.
-    func home(home: HMHome, didRemoveActionSet actionSet: HMActionSet) {
+    func home(_ home: HMHome, didRemoveActionSet actionSet: HMActionSet) {
         if actionSet == self.actionSet {
-            dismissViewControllerAnimated(true, completion: nil)
+            self.dismiss(animated: true, completion: nil)
         }
     }
 }

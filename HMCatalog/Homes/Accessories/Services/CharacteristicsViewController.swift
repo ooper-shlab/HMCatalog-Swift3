@@ -29,7 +29,7 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
     }
     
     /// Reloads the view and enabled notifications for all relevant characteristics.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         title = service.name
         setNotificationsEnabled(true)
@@ -37,7 +37,7 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
     }
     
     /// Disables notifications for characteristics.
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         setNotificationsEnabled(false)
     }
@@ -56,7 +56,7 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
         
         - parameter notificationsEnabled: A `Bool`; whether to enable or disable.
     */
-    func setNotificationsEnabled(notificationsEnabled: Bool) {
+    func setNotificationsEnabled(_ notificationsEnabled: Bool) {
         for characteristic in service.characteristics {
             if characteristic.supportsEventNotification {
                 characteristic.enableNotification(notificationsEnabled) { error in
@@ -78,13 +78,13 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
     
     // MARK: Table View Methods
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        switch CharacteristicTableViewSection(rawValue: indexPath.section) {
-            case .Characteristics?:
-                let characteristic = service.characteristics[indexPath.row]
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch CharacteristicTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .characteristics?:
+                let characteristic = service.characteristics[(indexPath as NSIndexPath).row]
                 didSelectCharacteristic(characteristic, atIndexPath: indexPath)
                 
-            case .AssociatedServiceType?:
+            case .associatedServiceType?:
                 didSelectAssociatedServiceTypeAtIndexPath(indexPath)
                 
             case nil:
@@ -96,9 +96,9 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
         If a characteristic is selected, and it is the 'Identify' characteristic,
         perform an identify on that accessory.
     */
-    private func didSelectCharacteristic(characteristic: HMCharacteristic, atIndexPath indexPath: NSIndexPath) {
+    private func didSelectCharacteristic(_ characteristic: HMCharacteristic, atIndexPath indexPath: IndexPath) {
         if characteristic.isIdentify {
-            service.accessory?.identifyWithCompletionHandler { error in
+            service.accessory?.identify { error in
                 if let error = error {
                     self.displayError(error)
                     return
@@ -112,11 +112,11 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
         
         - parameter indexPath: The selected index path.
     */
-    private func didSelectAssociatedServiceTypeAtIndexPath(indexPath: NSIndexPath) {
+    private func didSelectAssociatedServiceTypeAtIndexPath(_ indexPath: IndexPath) {
         let serviceTypes = HMService.validAssociatedServiceTypes
         var newServiceType: String?
-        if indexPath.row < serviceTypes.count {
-            newServiceType = serviceTypes[indexPath.row]
+        if (indexPath as NSIndexPath).row < serviceTypes.count {
+            newServiceType = serviceTypes[(indexPath as NSIndexPath).row]
         }
         service.updateAssociatedServiceType(newServiceType) { error in
             if let error = error {
@@ -130,26 +130,26 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
     
     /// Reloads the associated service section in the table view.
     private func didUpdateAssociatedServiceType() {
-        let associatedServiceTypeIndexSet = NSIndexSet(index: CharacteristicTableViewSection.AssociatedServiceType.rawValue)
+        let associatedServiceTypeIndexSet = IndexSet(integer: CharacteristicTableViewSection.associatedServiceType.rawValue)
 
-        tableView.reloadSections(associatedServiceTypeIndexSet, withRowAnimation: .Automatic)
+        tableView.reloadSections(associatedServiceTypeIndexSet, with: .automatic)
     }
     
     // MARK: HMHomeDelegate Methods
     
     /// If our accessory was removed, pop to root view controller.
-    func home(home: HMHome, didRemoveAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didRemoveAccessory accessory: HMAccessory) {
         if accessory == service.accessory {
-            navigationController?.popToRootViewControllerAnimated(true)
+            _ = navigationController?.popToRootViewController(animated: true)
         }
     }
     
     // MARK: HMAccessoryDelegate Methods
     
     /// If our accessory becomes unreachable, pop to root view controller.
-    func accessoryDidUpdateReachability(accessory: HMAccessory) {
-        if accessory == service.accessory && !accessory.reachable {
-            navigationController?.popToRootViewControllerAnimated(true)
+    func accessoryDidUpdateReachability(_ accessory: HMAccessory) {
+        if accessory == service.accessory && !accessory.isReachable {
+            _ = navigationController?.popToRootViewController(animated: true)
         }
     }
     
@@ -157,11 +157,11 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
         Search for the cell corresponding to that characteristic and
         update its value.
     */
-    func accessory(accessory: HMAccessory, service: HMService, didUpdateValueForCharacteristic characteristic: HMCharacteristic) {
-        if let index = service.characteristics.indexOf(characteristic) {
-            let indexPath = NSIndexPath(forRow: index, inSection: 0)
-            let cell = tableView.cellForRowAtIndexPath(indexPath) as! CharacteristicCell
-            cell.setValue(characteristic.value, notify: false)
+    func accessory(_ accessory: HMAccessory, service: HMService, didUpdateValueFor characteristic: HMCharacteristic) {
+        if let index = service.characteristics.index(of: characteristic) {
+            let indexPath = IndexPath(row: index, section: 0)
+            let cell = tableView.cellForRow(at: indexPath) as! CharacteristicCell
+            cell.setValue(characteristic.value as? CellValueType, notify: false)
         }
     }
 }

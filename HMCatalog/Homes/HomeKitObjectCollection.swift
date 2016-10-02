@@ -11,7 +11,7 @@ import HomeKit
 
 /// Represents the all different types of HomeKit objects.
 enum HomeKitObjectSection: Int {
-    case Accessory, Room, Zone, User, ActionSet, Trigger, ServiceGroup
+    case accessory, room, zone, user, actionSet, trigger, serviceGroup
     
     static let count = 7
 }
@@ -36,7 +36,7 @@ class HomeKitObjectCollection {
     
         - parameter object: The HomeKit object to append.
     */
-    func append(object: AnyObject) {
+    func append(_ object: AnyObject) {
         switch object {
             case let actionSet as HMActionSet:
                 actionSets.append(actionSet)
@@ -76,36 +76,36 @@ class HomeKitObjectCollection {
         - returns:  The `NSIndexPath` representing the location of
                     the HomeKit object in the table view.
     */
-    func indexPathOfObject(object: AnyObject) -> NSIndexPath? {
+    func indexPathOfObject(_ object: AnyObject) -> IndexPath? {
         switch object {
             case let actionSet as HMActionSet:
-                if let index = actionSets.indexOf(actionSet) {
-                    return NSIndexPath(forRow: index, inSection: HomeKitObjectSection.ActionSet.rawValue)
+                if let index = actionSets.index(of: actionSet) {
+                    return IndexPath(row: index, section: HomeKitObjectSection.actionSet.rawValue)
                 }
                 
             case let accessory as HMAccessory:
-                if let index = accessories.indexOf(accessory) {
-                    return NSIndexPath(forRow: index, inSection: HomeKitObjectSection.Accessory.rawValue)
+                if let index = accessories.index(of: accessory) {
+                    return IndexPath(row: index, section: HomeKitObjectSection.accessory.rawValue)
                 }
                 
             case let room as HMRoom:
-                if let index = rooms.indexOf(room) {
-                    return NSIndexPath(forRow: index, inSection: HomeKitObjectSection.Room.rawValue)
+                if let index = rooms.index(of: room) {
+                    return IndexPath(row: index, section: HomeKitObjectSection.room.rawValue)
                 }
                 
             case let zone as HMZone:
-                if let index = zones.indexOf(zone) {
-                    return NSIndexPath(forRow: index, inSection: HomeKitObjectSection.Zone.rawValue)
+                if let index = zones.index(of: zone) {
+                    return IndexPath(row: index, section: HomeKitObjectSection.zone.rawValue)
                 }
                 
             case let trigger as HMTrigger:
-                if let index = triggers.indexOf(trigger) {
-                    return NSIndexPath(forRow: index, inSection: HomeKitObjectSection.Trigger.rawValue)
+                if let index = triggers.index(of: trigger) {
+                    return IndexPath(row: index, section: HomeKitObjectSection.trigger.rawValue)
                 }
                 
             case let serviceGroup as HMServiceGroup:
-                if let index = serviceGroups.indexOf(serviceGroup) {
-                    return NSIndexPath(forRow: index, inSection: HomeKitObjectSection.ServiceGroup.rawValue)
+                if let index = serviceGroups.index(of: serviceGroup) {
+                    return IndexPath(row: index, section: HomeKitObjectSection.serviceGroup.rawValue)
                 }
                 
             default: break
@@ -119,36 +119,36 @@ class HomeKitObjectCollection {
     
         - parameter object: The HomeKit object to remove.
     */
-    func remove(object: AnyObject) {
+    func remove(_ object: AnyObject) {
         switch object {
             case let actionSet as HMActionSet:
-                if let index = actionSets.indexOf(actionSet) {
-                    actionSets.removeAtIndex(index)
+                if let index = actionSets.index(of: actionSet) {
+                    actionSets.remove(at: index)
                 }
                 
             case let accessory as HMAccessory:
-                if let index = accessories.indexOf(accessory) {
-                    accessories.removeAtIndex(index)
+                if let index = accessories.index(of: accessory) {
+                    accessories.remove(at: index)
                 }
                 
             case let room as HMRoom:
-                if let index = rooms.indexOf(room) {
-                    rooms.removeAtIndex(index)
+                if let index = rooms.index(of: room) {
+                    rooms.remove(at: index)
                 }
                 
             case let zone as HMZone:
-                if let index = zones.indexOf(zone) {
-                    zones.removeAtIndex(index)
+                if let index = zones.index(of: zone) {
+                    zones.remove(at: index)
                 }
                 
             case let trigger as HMTrigger:
-                if let index = triggers.indexOf(trigger) {
-                    triggers.removeAtIndex(index)
+                if let index = triggers.index(of: trigger) {
+                    triggers.remove(at: index)
                 }
                 
             case let serviceGroup as HMServiceGroup:
-                if let index = serviceGroups.indexOf(serviceGroup) {
-                    serviceGroups.removeAtIndex(index)
+                if let index = serviceGroups.index(of: serviceGroup) {
+                    serviceGroups.remove(at: index)
                 }
                 
             default:
@@ -163,24 +163,24 @@ class HomeKitObjectCollection {
     
         - returns:  An array of `NSObject`s corresponding to the provided section.
     */
-    func objectsForSection(section: HomeKitObjectSection) -> [NSObject] {
+    func objectsForSection(_ section: HomeKitObjectSection) -> [NSObject] {
         switch section {
-            case .ActionSet:
+            case .actionSet:
                 return actionSets
                 
-            case .Accessory:
+            case .accessory:
                 return accessories
                 
-            case .Room:
+            case .room:
                 return rooms
                 
-            case .Zone:
+            case .zone:
                 return zones
                 
-            case .Trigger:
+            case .trigger:
                 return triggers
                 
-            case .ServiceGroup:
+            case .serviceGroup:
                 return serviceGroups
                 
             default:
@@ -195,25 +195,25 @@ class HomeKitObjectCollection {
     
         - returns:  The corrosponding `HomeKitObjectSection`
     */
-    class func sectionForObject(object: AnyObject?) -> HomeKitObjectSection? {
+    class func sectionForObject(_ object: AnyObject?) -> HomeKitObjectSection? {
         switch object {
             case is HMActionSet:
-                return .ActionSet
+                return .actionSet
                 
             case is HMAccessory:
-                return .Accessory
+                return .accessory
                 
             case is HMZone:
-                return .Zone
+                return .zone
                 
             case is HMRoom:
-                return .Room
+                return .room
                 
             case is HMTrigger:
-                return .Trigger
+                return .trigger
                 
             case is HMServiceGroup:
-                return .ServiceGroup
+                return .serviceGroup
                 
             default:
                 return nil
@@ -225,7 +225,7 @@ class HomeKitObjectCollection {
         
         - parameter home: The `HMHome` with which to reset the collection.
     */
-    func resetWithHome(home: HMHome) {
+    func resetWithHome(_ home: HMHome) {
         accessories = home.accessories.sortByLocalizedName()
         rooms = home.allRooms
         zones = home.zones.sortByLocalizedName()

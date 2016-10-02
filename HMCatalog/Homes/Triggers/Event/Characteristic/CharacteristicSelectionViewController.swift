@@ -36,18 +36,18 @@ class CharacteristicSelectionViewController: HMCatalogViewController {
     // MARK: View Methods
     
     /// Resets the internal array of accessories from the home.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // Only take accessories which have one control service.
         accessories = home.sortedControlAccessories
     }
     
     /// Configures the `ServicesViewController` and passes it the correct accessory.
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == Identifiers.showServicesSegue {
             let senderCell = sender as! UITableViewCell
             let servicesVC = segue.intendedDestinationViewController as! ServicesViewController
-            let cellIndex = tableView.indexPathForCell(senderCell)!.row
+            let cellIndex = (tableView.indexPath(for: senderCell)! as NSIndexPath).row
             servicesVC.allowsAllWrites = true
             servicesVC.onlyShowsControlServices = true
             servicesVC.accessory = accessories[cellIndex]
@@ -61,50 +61,50 @@ class CharacteristicSelectionViewController: HMCatalogViewController {
         Updates the predicates in the trigger creator and then
         dismisses the view controller.
     */
-    @IBAction func didTapSave(sender: UIBarButtonItem) {
+    @IBAction func didTapSave(_ sender: UIBarButtonItem) {
         /*
             We should not save the trigger completely, the user still has a chance to bail out.
             Instead, we generate all of the predicates that were in the map.
         */
         triggerCreator.updatePredicates()
-        dismissViewControllerAnimated(true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
     
     // MARK: Table View Methods
     
     /// Single section view controller.
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
     /// - returns:  The number of accessories. If there are none, will return 1 (for the 'none row').
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return max(accessories.count, 1)
     }
     
     /// - returns:  An Accessory cell that contains an accessory's name.
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let accessory = accessories.sortByLocalizedName()[indexPath.row]
-        let cellIdentifier = accessory.reachable ? Identifiers.accessoryCell : Identifiers.unreachableAccessoryCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let accessory = accessories.sortByLocalizedName()[(indexPath as NSIndexPath).row]
+        let cellIdentifier = accessory.isReachable ? Identifiers.accessoryCell : Identifiers.unreachableAccessoryCell
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
         cell.textLabel?.text = accessory.name
         
         return cell
     }
     
     /// Shows the services in the selected accessory.
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        let cell = tableView.cellForRowAtIndexPath(indexPath)!
-        if cell.selectionStyle == .None {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let cell = tableView.cellForRow(at: indexPath)!
+        if cell.selectionStyle == .none {
             return
         }
-        performSegueWithIdentifier(Identifiers.showServicesSegue, sender: cell)
+        performSegue(withIdentifier: Identifiers.showServicesSegue, sender: cell)
     }
     
     /// - returns:  Localized "Accessories" string.
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return NSLocalizedString("Accessories", comment: "Accessories")
     }
 }

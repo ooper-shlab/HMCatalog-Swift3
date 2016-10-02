@@ -12,19 +12,19 @@ import HomeKit
 /// Represents all possible sections in a `TriggerViewController` subclass.
 enum TriggerTableViewSection: Int {
     // All triggers have these sections.
-    case Name, Enabled, ActionSets
+    case name, enabled, actionSets
     
     // Timer triggers only.
-    case DateAndTime, Recurrence
+    case dateAndTime, recurrence
     
     // Location and Characteristic triggers only.
-    case Conditions
+    case conditions
 
     // Location triggers only.
-    case Location, Region
+    case location, region
 
     // Characteristic triggers only.
-    case Characteristics
+    case characteristics
 }
 
 /**
@@ -78,12 +78,12 @@ class TriggerViewController: HMCatalogViewController {
         if let trigger = trigger {
             selectedActionSets = trigger.actionSets
             nameField.text = trigger.name
-            enabledSwitch.on = trigger.enabled
+            enabledSwitch.isOn = trigger.isEnabled
         }
 
         enableSaveButtonIfApplicable()
         
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Identifiers.actionSetCell)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: Identifiers.actionSetCell)
     }
     
     // MARK: IBAction Methods
@@ -92,16 +92,16 @@ class TriggerViewController: HMCatalogViewController {
         Any time the name field changed, reevaluate whether or not
         to enable the save button.
     */
-    @IBAction func nameFieldDidChange(sender: UITextField) {
+    @IBAction func nameFieldDidChange(_ sender: UITextField) {
         enableSaveButtonIfApplicable()
     }
     
     /// Saves the trigger and dismisses this view controller.
     @IBAction func saveAndDismiss() {
-        saveButton.enabled = false
+        saveButton.isEnabled = false
         triggerCreator?.saveTriggerWithName(trimmedName, actionSets: selectedActionSets) { trigger, errors in
             self.trigger = trigger
-            self.saveButton.enabled = true
+            self.saveButton.isEnabled = true
             
             if !errors.isEmpty {
                 self.displayErrors(errors)
@@ -115,7 +115,7 @@ class TriggerViewController: HMCatalogViewController {
     }
     
     @IBAction func dismiss() {
-        dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
     
     // MARK: Subclass Methods
@@ -130,20 +130,20 @@ class TriggerViewController: HMCatalogViewController {
         
         - returns:  The `TriggerTableViewSection` for the provided index.
     */
-    func sectionForIndex(index: Int) -> TriggerTableViewSection? {
+    func sectionForIndex(_ index: Int) -> TriggerTableViewSection? {
         return nil
     }
     
     // MARK: Helper Methods
     
     /// Enable the trigger if necessary.
-    func enableTrigger(trigger: HMTrigger, completion: Void -> Void) {
-        if trigger.enabled == enabledSwitch.on {
+    func enableTrigger(_ trigger: HMTrigger, completion: @escaping (Void) -> Void) {
+        if trigger.isEnabled == enabledSwitch.isOn {
             completion()
             return
         }
 
-        trigger.enable(enabledSwitch.on) { error in
+        trigger.enable(enabledSwitch.isOn) { error in
             if let error = error {
                 self.displayError(error)
             }
@@ -160,27 +160,27 @@ class TriggerViewController: HMCatalogViewController {
         2. There will be at least one action set in the trigger after saving.
     */
     private func enableSaveButtonIfApplicable() {
-        saveButton.enabled = !trimmedName.characters.isEmpty &&
-            (!selectedActionSets.isEmpty || trigger?.actionSets.count > 0)
+        saveButton.isEnabled = !trimmedName.characters.isEmpty &&
+            (!selectedActionSets.isEmpty || trigger?.actionSets.count ?? 0 > 0)
     }
     
     /// - returns:  The name from the `nameField`, stripping newline and whitespace characters.
     var trimmedName: String {
-        return nameField.text!.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        return nameField.text!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
     
     // MARK: Table View Methods
     
     /// Creates a cell that represents either a selected or unselected action set cell.
-    private func tableView(tableView: UITableView, actionSetCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.actionSetCell, forIndexPath: indexPath)
-        let actionSet = actionSets[indexPath.row]
+    private func tableView(_ tableView: UITableView, actionSetCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.actionSetCell, for: indexPath)
+        let actionSet = actionSets[(indexPath as NSIndexPath).row]
 
         if selectedActionSets.contains(actionSet)  {
-            cell.accessoryType = .Checkmark
+            cell.accessoryType = .checkmark
         }
         else {
-            cell.accessoryType = .None
+            cell.accessoryType = .none
         }
         
         cell.textLabel?.text = actionSet.name
@@ -190,21 +190,21 @@ class TriggerViewController: HMCatalogViewController {
     
     
     /// Only handles the ActionSets case, defaults to super.
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if sectionForIndex(section) == .ActionSets {
-            return actionSets.count ?? 0
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if sectionForIndex(section) == .actionSets {
+            return actionSets?.count ?? 0
         }
 
         return super.tableView(tableView, numberOfRowsInSection: section)
     }
     
     /// Only handles the ActionSets case, defaults to super.
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        if sectionForIndex(indexPath.section) == .ActionSets {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if sectionForIndex((indexPath as NSIndexPath).section) == .actionSets {
             return self.tableView(tableView, actionSetCellForRowAtIndexPath: indexPath)
         }
 
-        return super.tableView(tableView, cellForRowAtIndexPath: indexPath)
+        return super.tableView(tableView, cellForRowAt: indexPath)
     }
     
     /**
@@ -215,20 +215,20 @@ class TriggerViewController: HMCatalogViewController {
         - returns:  The superclass's indentationLevel for the first row in the provided section,
                     instead of the provided row.
     */
-    override func tableView(tableView: UITableView, indentationLevelForRowAtIndexPath indexPath: NSIndexPath) -> Int {
-        let newIndexPath = NSIndexPath(forRow: 0, inSection: indexPath.section)
+    override func tableView(_ tableView: UITableView, indentationLevelForRowAt indexPath: IndexPath) -> Int {
+        let newIndexPath = IndexPath(row: 0, section: (indexPath as NSIndexPath).section)
 
-        return super.tableView(tableView, indentationLevelForRowAtIndexPath: newIndexPath)
+        return super.tableView(tableView, indentationLevelForRowAt: newIndexPath)
     }
     
     /**
         Tell the tableView to automatically size the custom rows, while using the superclass's
         static sizing for the static cells.
     */
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        switch sectionForIndex(indexPath.section) {
-            case .Name?, .Enabled?:
-                return super.tableView(tableView, heightForRowAtIndexPath: indexPath)
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .name?, .enabled?:
+                return super.tableView(tableView, heightForRowAt: indexPath)
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
@@ -239,9 +239,9 @@ class TriggerViewController: HMCatalogViewController {
     }
     
     /// Handles row selction for action sets, defaults to super implementation.
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        if sectionForIndex(indexPath.section) == .ActionSets {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        if sectionForIndex((indexPath as NSIndexPath).section) == .actionSets {
             self.tableView(tableView, didSelectActionSetAtIndexPath: indexPath)
         }
     }
@@ -250,12 +250,12 @@ class TriggerViewController: HMCatalogViewController {
         Manages footer titles for higher-level sections. Superclasses should fall back
         on this implementation after attempting to handle any special trigger sections.
     */
-    override func tableView(tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         switch sectionForIndex(section) {
-            case .ActionSets?:
+            case .actionSets?:
                 return NSLocalizedString("When this trigger is activated, it will set these scenes. You can only select scenes which have at least one action.", comment: "Scene Trigger Description")
                 
-            case .Enabled?:
+            case .enabled?:
                 return NSLocalizedString("This trigger will only activate if it is enabled. You can disable triggers to temporarily stop them from running.", comment: "Trigger Enabled Description")
                 
             case nil:
@@ -270,17 +270,17 @@ class TriggerViewController: HMCatalogViewController {
         Handle selection of an action set cell. If the action set is already part of the selected action sets,
         then remove it from the selected list. Otherwise, add it to the selected list.
     */
-    func tableView(tableView: UITableView, didSelectActionSetAtIndexPath indexPath: NSIndexPath) {
-        let actionSet = actionSets[indexPath.row]
-        if let index = selectedActionSets.indexOf(actionSet) {
-            selectedActionSets.removeAtIndex(index)
+    func tableView(_ tableView: UITableView, didSelectActionSetAtIndexPath indexPath: IndexPath) {
+        let actionSet = actionSets[(indexPath as NSIndexPath).row]
+        if let index = selectedActionSets.index(of: actionSet) {
+            selectedActionSets.remove(at: index)
         }
         else {
             selectedActionSets.append(actionSet)
         }
 
         enableSaveButtonIfApplicable()
-        tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+        tableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
     // MARK: HMHomeDelegate Methods
@@ -289,14 +289,14 @@ class TriggerViewController: HMCatalogViewController {
         If our trigger has been removed from the home,
         dismiss the view controller.
     */
-    func home(home: HMHome, didRemoveTrigger trigger: HMTrigger) {
+    func home(_ home: HMHome, didRemoveTrigger trigger: HMTrigger) {
         if self.trigger == trigger{
-            dismissViewControllerAnimated(true, completion: nil)
+            self.dismiss(animated: true, completion: nil)
         }
     }
     
     /// If our trigger has been updated, reload our data.
-    func home(home: HMHome, didUpdateTrigger trigger: HMTrigger) {
+    func home(_ home: HMHome, didUpdateTrigger trigger: HMTrigger) {
         if self.trigger == trigger{
             tableView.reloadData()
         }

@@ -21,12 +21,12 @@ class TextCharacteristicCell: CharacteristicCell, UITextFieldDelegate {
     override var characteristic: HMCharacteristic! {
         didSet {
             textField.alpha = enabled ? 1.0 : CharacteristicCell.DisabledAlpha
-            textField.userInteractionEnabled = enabled
+            textField.isUserInteractionEnabled = enabled
         }
     }
     
     /// If notify is false, sets the text field's text from the value.
-    override func setValue(newValue: AnyObject?, notify: Bool) {
+    override func setValue(_ newValue: CellValueType?, notify: Bool) {
         super.setValue(newValue, notify: notify)
         if !notify {
             if let newStringValue = newValue as? String {
@@ -36,13 +36,13 @@ class TextCharacteristicCell: CharacteristicCell, UITextFieldDelegate {
     }
     
     /// Dismiss the keyboard when "Go" is clicked
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
     }
     
     /// Sets the value of the characteristic when editing is complete.
-    func textFieldDidEndEditing(textField: UITextField) {
-        setValue(textField.text, notify: true)
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        setValue(textField.text as NSString?, notify: true)
     }
 }

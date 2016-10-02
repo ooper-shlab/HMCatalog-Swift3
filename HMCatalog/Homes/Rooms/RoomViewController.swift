@@ -32,7 +32,7 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     
     // MARK: View Methods
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         reloadData()
     }
@@ -40,7 +40,7 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     // MARK: Table View Methods
     
     /// - returns:  The number of accessories within this room.
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let rows = accessories.count
         if rows == 0 {
             let message = NSLocalizedString("No Accessories", comment: "No Accessories")
@@ -54,33 +54,33 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// - returns:  `true` if the current room is not the home's roomForEntireHome; `false` otherwise.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return room != home.roomForEntireHome()
     }
     
     /// - returns:  Localized "Unassign".
-    override func tableView(tableView: UITableView, titleForDeleteConfirmationButtonForRowAtIndexPath indexPath: NSIndexPath) -> String? {
+    override func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
         return NSLocalizedString("Unassign", comment: "Unassign")
     }
     
     /// Assigns the 'deleted' room to the home's roomForEntireHome.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            unassignAccessory(accessories[indexPath.row])
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            unassignAccessory(accessories[(indexPath as NSIndexPath).row])
         }
     }
     
     /// - returns:  A cell representing an accessory.
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let accessory = accessories[indexPath.row]
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let accessory = accessories[(indexPath as NSIndexPath).row]
 
         var reuseIdentifier = Identifiers.accessoryCell
         
-        if !accessory.reachable {
+        if !accessory.isReachable {
             reuseIdentifier = Identifiers.unreachableAccessoryCell
         }
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         
         cell.textLabel?.text = accessory.name
         
@@ -88,7 +88,7 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// - returns:  A localized description, "Accessories" if there are accessories to list.
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         if accessories.isEmpty {
             return nil
         }
@@ -121,12 +121,12 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Sets the accessory and home of the modifyAccessoryViewController that will be presented.
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        super.prepareForSegue(segue, sender: sender)
-        let indexPath = tableView.indexPathForCell(sender as! UITableViewCell)!
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
+        let indexPath = tableView.indexPath(for: sender as! UITableViewCell)!
         if segue.identifier == Identifiers.modifyAccessorySegue {
             let modifyViewController = segue.intendedDestinationViewController as! ModifyAccessoryViewController
-            modifyViewController.accessory = room.accessories[indexPath.row]
+            modifyViewController.accessory = room.accessories[(indexPath as NSIndexPath).row]
         }
     }
     
@@ -136,12 +136,12 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     
         - parameter accessory: The `HMAccessory` to add.
     */
-    private func didAssignAccessory(accessory: HMAccessory) {
+    private func didAssignAccessory(_ accessory: HMAccessory) {
         accessories.append(accessory)
         sortAccessories()
-        if let newAccessoryIndex = accessories.indexOf(accessory) {
-            let newAccessoryIndexPath = NSIndexPath(forRow: newAccessoryIndex, inSection: 0)
-            tableView.insertRowsAtIndexPaths([newAccessoryIndexPath], withRowAnimation: .Automatic)
+        if let newAccessoryIndex = accessories.index(of: accessory) {
+            let newAccessoryIndexPath = IndexPath(row: newAccessoryIndex, section: 0)
+            tableView.insertRows(at: [newAccessoryIndexPath], with: .automatic)
         }
     }
     
@@ -151,11 +151,11 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     
         - parameter accessory: The `HMAccessory` to remove.
     */
-    private func didUnassignAccessory(accessory: HMAccessory) {
-        if let accessoryIndex = accessories.indexOf(accessory) {
-            accessories.removeAtIndex(accessoryIndex)
-            let accessoryIndexPath = NSIndexPath(forRow: accessoryIndex, inSection: 0)
-            tableView.deleteRowsAtIndexPaths([accessoryIndexPath], withRowAnimation: .Automatic)
+    private func didUnassignAccessory(_ accessory: HMAccessory) {
+        if let accessoryIndex = accessories.index(of: accessory) {
+            accessories.remove(at: accessoryIndex)
+            let accessoryIndexPath = IndexPath(row: accessoryIndex, section: 0)
+            tableView.deleteRows(at: [accessoryIndexPath], with: .automatic)
         }
     }
     
@@ -164,9 +164,9 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     
         - parameter accessory: The `HMAccessory` to assign to the room.
     */
-    private func assignAccessory(accessory: HMAccessory) {
+    private func assignAccessory(_ accessory: HMAccessory) {
         didAssignAccessory(accessory)
-        home.assignAccessory(accessory, toRoom: room) { error in
+        home.assignAccessory(accessory, to: room) { error in
             if let error = error {
                 self.displayError(error)
                 self.didUnassignAccessory(accessory)
@@ -179,9 +179,9 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     
         - parameter accessory: The `HMAccessory` to reassign.
     */
-    private func unassignAccessory(accessory: HMAccessory) {
+    private func unassignAccessory(_ accessory: HMAccessory) {
         didUnassignAccessory(accessory)
-        home.assignAccessory(accessory, toRoom: home.roomForEntireHome()) { error in
+        home.assignAccessory(accessory, to: home.roomForEntireHome()) { error in
             if let error = error {
                 self.displayError(error)
                 self.didAssignAccessory(accessory)
@@ -195,20 +195,20 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     
         - parameter accessory: The `HMAccessory` to reload.
     */
-    func didModifyAccessory(accessory: HMAccessory){
-        if let index = accessories.indexOf(accessory) {
+    func didModifyAccessory(_ accessory: HMAccessory){
+        if let index = accessories.index(of: accessory) {
             let indexPaths = [
-                NSIndexPath(forRow: index, inSection: 0)
+                IndexPath(row: index, section: 0)
             ]
             
-            tableView.reloadRowsAtIndexPaths(indexPaths, withRowAnimation: .Automatic)
+            tableView.reloadRows(at: indexPaths, with: .automatic)
         }
     }
     
     // MARK: HMHomeDelegate Methods
     
     /// If the accessory was added to this room, insert it.
-    func home(home: HMHome, didAddAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didAddAccessory accessory: HMAccessory) {
         if accessory.room == room {
             accessory.delegate = self
             didAssignAccessory(accessory)
@@ -216,7 +216,7 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Remove the accessory from our room, if required.
-    func home(home: HMHome, didRemoveAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didRemoveAccessory accessory: HMAccessory) {
         didUnassignAccessory(accessory)
     }
     
@@ -229,7 +229,7 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
         2. An accessory is being assigned from this room to another room.
         3. We can ignore this message.
     */
-    func home(home: HMHome, didUpdateRoom room: HMRoom, forAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didUpdateRoom room: HMRoom, forAccessory accessory: HMAccessory) {
         if room == self.room {
             didAssignAccessory(accessory)
         }
@@ -239,14 +239,14 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// If our room was removed, pop back.
-    func home(home: HMHome, didRemoveRoom room: HMRoom) {
+    func home(_ home: HMHome, didRemoveRoom room: HMRoom) {
         if room == self.room {
-            navigationController!.popViewControllerAnimated(true)
+            navigationController!.popViewController(animated: true)
         }
     }
     
     /// If our room was renamed, reload our title.
-    func home(home: HMHome, didUpdateNameForRoom room: HMRoom) {
+    func home(_ home: HMHome, didUpdateNameFor room: HMRoom) {
         if room == self.room {
             navigationItem.title = room.name
         }
@@ -256,11 +256,11 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     
     // Accessory updates will reload the cell for the accessory.
 
-    func accessoryDidUpdateReachability(accessory: HMAccessory) {
+    func accessoryDidUpdateReachability(_ accessory: HMAccessory) {
         didModifyAccessory(accessory)
     }
     
-    func accessoryDidUpdateName(accessory: HMAccessory) {
+    func accessoryDidUpdateName(_ accessory: HMAccessory) {
         didModifyAccessory(accessory)
     }
 }

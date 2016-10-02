@@ -22,7 +22,7 @@ extension HMService {
         - returns:  A localized description of that service type or
                     the original `type` string if one cannot be found.
     */
-    class func localizedDescriptionForServiceType(type: String) -> String {
+    class func localizedDescriptionForServiceType(_ type: String) -> String {
         return Constants.serviceMap[type] ?? type
     }
     

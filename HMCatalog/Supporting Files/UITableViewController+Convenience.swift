@@ -17,23 +17,23 @@ extension UITableViewController {
         - parameter message:    The String message to display. The message is hidden
                                 if `nil` is provided.
     */
-    func setBackgroundMessage(message: String?) {
+    func setBackgroundMessage(_ message: String?) {
         if let message = message {
             // Display a message when the table is empty
             let messageLabel = UILabel()
             
             messageLabel.text = message
-            messageLabel.font = UIFont.preferredFontForTextStyle(UIFontTextStyleBody)
-            messageLabel.textColor = UIColor.lightGrayColor()
-            messageLabel.textAlignment = .Center
+            messageLabel.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.body)
+            messageLabel.textColor = UIColor.lightGray
+            messageLabel.textAlignment = .center
             messageLabel.sizeToFit()
             
             tableView.backgroundView = messageLabel
-            tableView.separatorStyle = .None
+            tableView.separatorStyle = .none
         }
         else {
             tableView.backgroundView = nil
-            tableView.separatorStyle = .SingleLine
+            tableView.separatorStyle = .singleLine
         }
     }
 }

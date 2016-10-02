@@ -13,13 +13,13 @@ import HomeKit
 /// Distinguishes between the three types of cells in the `HomeViewController`.
 enum HomeCellType {
     /// Represents an actual object in HomeKit.
-    case Object
+    case object
     
     /// Represents an "Add" row for users to select to create an object in HomeKit.
-    case Add
+    case add
     
     /// The cell is displaying text to show the user that no objects exist in this section.
-    case None
+    case none
 }
 
 /**
@@ -68,9 +68,9 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         Determines the destination of the segue and passes the correct
         HomeKit object onto the next view controller.
     */
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard let sender = sender as? UITableViewCell else { return }
-        guard let indexPath = tableView.indexPathForCell(sender) else { return }
+        guard let indexPath = tableView.indexPath(for: sender) else { return }
         
         let homeKitObject = homeKitObjectAtIndexPath(indexPath)
         let destinationViewController = segue.intendedDestinationViewController
@@ -131,7 +131,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Sets the navigation title and reloads view.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationItem.title = home.name
         reloadTable()
@@ -166,35 +166,35 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - returns:  The `HomeCellType` for cell.
     */
-    private func cellTypeForIndexPath(indexPath: NSIndexPath) -> HomeCellType {
-        guard let section = HomeKitObjectSection(rawValue: indexPath.section) else { return .None }
+    private func cellTypeForIndexPath(_ indexPath: IndexPath) -> HomeCellType {
+        guard let section = HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) else { return .none }
         
         let objectCount = objectCollection.objectsForSection(section).count
 
         if objectCount == 0 {
             // No objects -- this is either an 'Add Row' or a 'None Row'.
-            return home.isAdmin ? .Add : .None
+            return home.isAdmin ? .add : .none
         }
-        else if indexPath.row == objectCount {
-            return .Add
+        else if (indexPath as NSIndexPath).row == objectCount {
+            return .add
         }
         else {
-            return .Object
+            return .object
         }
     }
     
     /// Reloads the trigger section.
     private func updateTriggerAddRow() {
-        let triggerSection = NSIndexSet(index: HomeKitObjectSection.Trigger.rawValue)
+        let triggerSection = IndexSet(integer: HomeKitObjectSection.trigger.rawValue)
      
-        tableView.reloadSections(triggerSection, withRowAnimation: .Automatic)
+        tableView.reloadSections(triggerSection, with: .automatic)
     }
     
     /// Reloads the action set section.
     private func updateActionSetSection() {
-        let actionSetSection = NSIndexSet(index: HomeKitObjectSection.ActionSet.rawValue)
+        let actionSetSection = IndexSet(integer: HomeKitObjectSection.actionSet.rawValue)
      
-        tableView.reloadSections(actionSetSection, withRowAnimation: .Automatic)
+        tableView.reloadSections(actionSetSection, with: .automatic)
         
         updateTriggerAddRow()
     }
@@ -218,13 +218,13 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - returns:  The HomeKit object.
     */
-    private func homeKitObjectAtIndexPath(indexPath: NSIndexPath) -> AnyObject? {
-        if cellTypeForIndexPath(indexPath) != .Object {
+    private func homeKitObjectAtIndexPath(_ indexPath: IndexPath) -> AnyObject? {
+        if cellTypeForIndexPath(indexPath) != .object {
             return nil
         }
         
-        if let section = HomeKitObjectSection(rawValue: indexPath.section) {
-            return objectCollection.objectsForSection(section)[indexPath.row]
+        if let section = HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) {
+            return objectCollection.objectsForSection(section)[(indexPath as NSIndexPath).row]
         }
         
         return nil
@@ -233,32 +233,32 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     // MARK: Table View Methods
     
     /// - returns:  The number of `HomeKitObjectSection`s.
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return HomeKitObjectSection.count
     }
     
     /// - returns:  Localized titles for each of the HomeKit sections.
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch HomeKitObjectSection(rawValue: section) {
-            case .Accessory?:
+            case .accessory?:
                 return NSLocalizedString("Accessories", comment: "Accessories")
                 
-            case .Room?:
+            case .room?:
                 return NSLocalizedString("Rooms", comment: "Rooms")
                 
-            case .Zone?:
+            case .zone?:
                 return NSLocalizedString("Zones", comment: "Zones")
                 
-            case .User?:
+            case .user?:
                 return NSLocalizedString("Users", comment: "Users")
                 
-            case .ActionSet?:
+            case .actionSet?:
                 return NSLocalizedString("Scenes", comment: "Scenes")
                 
-            case .Trigger?:
+            case .trigger?:
                 return NSLocalizedString("Triggers", comment: "Triggers")
                 
-            case .ServiceGroup?:
+            case .serviceGroup?:
                 return NSLocalizedString("Service Groups", comment: "Service Groups")
             
             case nil:
@@ -268,74 +268,74 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// - returns:  Localized text for the 'add row'.
-    private func titleForAddRowInSection(section: HomeKitObjectSection) -> String {
+    private func titleForAddRowInSection(_ section: HomeKitObjectSection) -> String {
         switch section {
-            case .Accessory:
+            case .accessory:
                 return NSLocalizedString("Add Accessory…", comment: "Add Accessory")
 
-            case .Room:
+            case .room:
                 return NSLocalizedString("Add Room…", comment: "Add Room")
             
-            case .Zone:
+            case .zone:
                 return NSLocalizedString("Add Zone…", comment: "Add Zone")
             
-            case .User:
+            case .user:
                 return NSLocalizedString("Manage Users…", comment: "Manage Users")
             
-            case .ActionSet:
+            case .actionSet:
                 return NSLocalizedString("Add Scene…", comment: "Add Scene")
             
-            case .Trigger:
+            case .trigger:
                 return NSLocalizedString("Add Trigger…", comment: "Add Trigger")
             
-            case .ServiceGroup:
+            case .serviceGroup:
                 return NSLocalizedString("Add Service Group…", comment: "Add Service Group")
         }
     }
     
     /// - returns:  Localized text for the 'none row'.
-    private func titleForNoneRowInSection(section: HomeKitObjectSection) -> String {
+    private func titleForNoneRowInSection(_ section: HomeKitObjectSection) -> String {
         switch section {
-            case .Accessory:
+            case .accessory:
                 return NSLocalizedString("No Accessories…", comment: "No Accessories")
 
-            case .Room:
+            case .room:
                 return NSLocalizedString("No Rooms…", comment: "No Rooms")
             
-            case .Zone:
+            case .zone:
                 return NSLocalizedString("No Zones…", comment: "No Zones")
             
-            case .User:
+            case .user:
                 // We only ever list 'Manage Users'.
                 return NSLocalizedString("Manage Users…", comment: "Manage Users")
             
-            case .ActionSet:
+            case .actionSet:
                 return NSLocalizedString("No Scenes…", comment: "No Scenes")
             
-            case .Trigger:
+            case .trigger:
                 return NSLocalizedString("No Triggers…", comment: "No Triggers")
             
-            case .ServiceGroup:
+            case .serviceGroup:
                 return NSLocalizedString("No Service Groups…", comment: "No Service Groups")
         }
     }
     
     /// - returns:  Localized descriptions for HomeKit object types.
-    override func tableView(tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         switch HomeKitObjectSection(rawValue: section) {
-            case .Zone?:
+            case .zone?:
                 return NSLocalizedString("Zones are optional collections of rooms.", comment: "Zones Description")
                 
-            case .User?:
+            case .user?:
                 return NSLocalizedString("Users can control the accessories in your home. You can share your home with anybody with an iCloud account.", comment: "Users Description")
                 
-            case .ActionSet?:
+            case .actionSet?:
                 return NSLocalizedString("Scenes (action sets) represent a state of your home. You must have at least one paired accessory to create a scene.", comment: "Scenes Description")
                 
-            case .Trigger?:
+            case .trigger?:
                 return NSLocalizedString("Triggers set scenes at specific times, when you get to locations, or when a characteristic is in a specific state. You must have created at least one scene with an action to create a trigger.", comment: "Trigger Description")
                 
-            case .ServiceGroup?:
+            case .serviceGroup?:
                 return NSLocalizedString("Service groups organize services in a custom way. For example, add a subset of lights in your living room to control them without controlling all the lights in the living room.", comment: "Service Group Description")
 
             case nil:
@@ -350,11 +350,11 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         Provides the number of rows in each HomeKit object section.
         Most sections just return the object count, but we also handle special cases.
     */
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let sectionEnum = HomeKitObjectSection(rawValue: section)!
         
         // Only "Manage Users" button is in the Users section
-        if sectionEnum == .User {
+        if sectionEnum == .user {
             return 1
         }
         
@@ -370,24 +370,24 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Generates a cell based on it's computed type.
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch cellTypeForIndexPath(indexPath) {
-            case .Add:
+            case .add:
                 return self.tableView(tableView, addCellForRowAtIndexPath: indexPath)
             
-            case .Object: 
+            case .object: 
                 return self.tableView(tableView, homeKitObjectCellForRowAtIndexPath: indexPath)
             
-            case .None: 
+            case .none: 
                 return self.tableView(tableView, noneCellForRowAtIndexPath: indexPath)
         }
     }
     
     /// Generates a 'none cell' with a localized title.
-    private func tableView(tableView: UITableView, noneCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.disabledAddCell, forIndexPath: indexPath)
+    private func tableView(_ tableView: UITableView, noneCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.disabledAddCell, for: indexPath)
 
-        let section = HomeKitObjectSection(rawValue: indexPath.section)!
+        let section = HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section)!
         
         cell.textLabel!.text = titleForNoneRowInSection(section)
         
@@ -400,17 +400,17 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         In some cases, the 'add cell' will be 'disabled' because the user is not
         allowed to perform the action.
     */
-    private func tableView(tableView: UITableView, addCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    private func tableView(_ tableView: UITableView, addCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         var reuseIdentifier = Identifiers.addCell
 
-        let section = HomeKitObjectSection(rawValue: indexPath.section)
+        let section = HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section)
 
-        if (!canAddActionSet && section == .ActionSet) ||
-            (!canAddTrigger && section == .Trigger) || !home.isAdmin {
+        if (!canAddActionSet && section == .actionSet) ||
+            (!canAddTrigger && section == .trigger) || !home.isAdmin {
                 reuseIdentifier = Identifiers.disabledAddCell
         }
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         
         cell.textLabel!.text = titleForAddRowInSection(section!)
         
@@ -424,28 +424,28 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - returns:  The cell reuse identifier.
     */
-    private func reuseIdentifierForIndexPath(indexPath: NSIndexPath) -> String {
-        switch HomeKitObjectSection(rawValue: indexPath.section) {
-            case .Accessory?:
+    private func reuseIdentifierForIndexPath(_ indexPath: IndexPath) -> String {
+        switch HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .accessory?:
                 let accessory = homeKitObjectAtIndexPath(indexPath) as! HMAccessory
-                return accessory.reachable ? Identifiers.accessoryCell : Identifiers.unreachableAccessoryCell
+                return accessory.isReachable ? Identifiers.accessoryCell : Identifiers.unreachableAccessoryCell
                 
-            case .Room?:
+            case .room?:
                 return Identifiers.roomCell
                 
-            case .Zone?:
+            case .zone?:
                 return Identifiers.zoneCell
                 
-            case .User?:
+            case .user?:
                 return Identifiers.userCell
                 
-            case .ActionSet?:
+            case .actionSet?:
                 return Identifiers.actionSetCell
                 
-            case .Trigger?:
+            case .trigger?:
                 return Identifiers.triggerCell
                 
-            case .ServiceGroup?:
+            case .serviceGroup?:
                 return Identifiers.serviceGroupCell
                 
             case nil:
@@ -454,36 +454,36 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Generates a cell for the HomeKit object at the specified index path.
-    private func tableView(tableView: UITableView, homeKitObjectCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    private func tableView(_ tableView: UITableView, homeKitObjectCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         // Grab the object associated with this indexPath.
         let homeKitObject = homeKitObjectAtIndexPath(indexPath)
         
         // Get the name of the object.
         let name: String
-        switch HomeKitObjectSection(rawValue: indexPath.section) {
-            case .Accessory?:
+        switch HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .accessory?:
                 let accessory = homeKitObject as! HMAccessory
                 name = accessory.name
                 
-            case .Room?:
+            case .room?:
                 let room = homeKitObject as! HMRoom
                 name = self.home.nameForRoom(room)
                 
-            case .Zone?:
+            case .zone?:
                 let zone = homeKitObject as! HMZone
                 name = zone.name
-            case .User?:
+            case .user?:
                 name = ""
                 
-            case .ActionSet?:
+            case .actionSet?:
                 let actionSet = homeKitObject as! HMActionSet
                 name = actionSet.name
                 
-            case .Trigger?:
+            case .trigger?:
                 let trigger = homeKitObject as! HMTrigger
                 name = trigger.name
                 
-            case .ServiceGroup?:
+            case .serviceGroup?:
                 let serviceGroup = homeKitObject as! HMServiceGroup
                 name = serviceGroup.name
                 
@@ -495,32 +495,32 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         // Grab the appropriate reuse identifier for this index path.
         let reuseIdentifier = reuseIdentifierForIndexPath(indexPath)
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         cell.textLabel?.text = name
 
         return cell
     }
     
     /// Allows users to remove HomeKit object rows if they are the admin of the home.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         let homeKitObject = homeKitObjectAtIndexPath(indexPath)
 
         if !home.isAdmin {
             return false
         }
         
-        if let actionSet = homeKitObject as? HMActionSet where actionSet.isBuiltIn {
+        if let actionSet = homeKitObject as? HMActionSet , actionSet.isBuiltIn {
             // We cannot remove built-in action sets.
             return false
         }
         
         // Any row that is not an 'add' row, and is not the roomForEntireHome, can be removed.
-        return !(homeKitObject as? NSObject == home.roomForEntireHome() || cellTypeForIndexPath(indexPath) == .Add)
+        return !(homeKitObject as? NSObject == home.roomForEntireHome() || cellTypeForIndexPath(indexPath) == .add)
     }
     
     /// Removes the HomeKit object at the specified index path.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
             let homeKitObject = homeKitObjectAtIndexPath(indexPath)!
             
             // Remove the object from the data structure. If it fails put it back.
@@ -535,63 +535,63 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Handles cell selection based on the cell type.
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        let cell = tableView.cellForRowAtIndexPath(indexPath)!
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let cell = tableView.cellForRow(at: indexPath)!
 
-        guard cell.selectionStyle != .None else { return }
+        guard cell.selectionStyle != .none else { return }
         
-        guard let section = HomeKitObjectSection(rawValue: indexPath.section) else {
+        guard let section = HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) else {
             fatalError("Unexpected `HomeKitObjectSection` raw value.")
         }
         
-        if cellTypeForIndexPath(indexPath) == .Add{
+        if cellTypeForIndexPath(indexPath) == .add{
             switch section {
-                case .Accessory:
+                case .accessory:
                     browseForAccessories()
 
-                case .Room:
+                case .room:
                     addNewRoom()
                 
-                case .Zone:
+                case .zone:
                     addNewZone()
                 
-                case .User:
+                case .user:
                     manageUsers()
                 
-                case .ActionSet:
+                case .actionSet:
                     addNewActionSet()
                 
-                case .Trigger:
+                case .trigger:
                     addNewTrigger()
                 
-                case .ServiceGroup:
+                case .serviceGroup:
                     addNewServiceGroup()
             }
         }
-        else if section == .ActionSet {
+        else if section == .actionSet {
             let selectedActionSet = homeKitObjectAtIndexPath(indexPath) as! HMActionSet
             executeActionSet(selectedActionSet)
         }
     }
     
     /// Handles an accessory button tap based on the section.
-    override func tableView(tableView: UITableView, accessoryButtonTappedForRowWithIndexPath indexPath: NSIndexPath) {
-        let cell = tableView.cellForRowAtIndexPath(indexPath)
+    override func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
+        let cell = tableView.cellForRow(at: indexPath)
 
-        if HomeKitObjectSection(rawValue: indexPath.section) == .Trigger {
+        if HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) == .trigger {
             let trigger = homeKitObjectAtIndexPath(indexPath)
 
             switch trigger {
                 case is HMTimerTrigger:
-                    performSegueWithIdentifier(Identifiers.showTimerTriggerSegue, sender: cell)
+                    performSegue(withIdentifier: Identifiers.showTimerTriggerSegue, sender: cell)
 
                 case let eventTrigger as HMEventTrigger:
                     if eventTrigger.isLocationEvent {
-                        performSegueWithIdentifier(Identifiers.showLocationTriggerSegue, sender: cell)
+                        performSegue(withIdentifier: Identifiers.showLocationTriggerSegue, sender: cell)
                     }
                     else {
-                        performSegueWithIdentifier(Identifiers.showCharacteristicTriggerSegue, sender: cell)
+                        performSegue(withIdentifier: Identifiers.showCharacteristicTriggerSegue, sender: cell)
                     }
                 
                 default: break
@@ -604,42 +604,42 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     /// Presents an alert controller to allow the user to choose a trigger type.
     private func addNewTrigger() {
         let title = NSLocalizedString("Add Trigger", comment: "Add Trigger")
-        let alertController = UIAlertController(title: title, message: nil, preferredStyle: .ActionSheet)
+        let alertController = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
         
         // Timer trigger
-        let timeAction = UIAlertAction(title: NSLocalizedString("Time", comment: "Time"), style: .Default) { _ in
-            self.performSegueWithIdentifier(Identifiers.addTimerTriggerSegue, sender: self)
+        let timeAction = UIAlertAction(title: NSLocalizedString("Time", comment: "Time"), style: .default) { _ in
+            self.performSegue(withIdentifier: Identifiers.addTimerTriggerSegue, sender: self)
         }
         alertController.addAction(timeAction)
         
         // Characteristic trigger
-        let eventAction = UIAlertAction(title: NSLocalizedString("Characteristic", comment: "Characteristic"), style: .Default) { _ in
-            self.performSegueWithIdentifier(Identifiers.addCharacteristicTriggerSegue, sender: self)
+        let eventAction = UIAlertAction(title: NSLocalizedString("Characteristic", comment: "Characteristic"), style: .default) { _ in
+            self.performSegue(withIdentifier: Identifiers.addCharacteristicTriggerSegue, sender: self)
         }
         alertController.addAction(eventAction)
         
         // Location trigger
-        let locationAction = UIAlertAction(title: NSLocalizedString("Location", comment: "Location"), style: .Default) { _ in
-            self.performSegueWithIdentifier(Identifiers.addLocationTriggerSegue, sender: self)
+        let locationAction = UIAlertAction(title: NSLocalizedString("Location", comment: "Location"), style: .default) { _ in
+            self.performSegue(withIdentifier: Identifiers.addLocationTriggerSegue, sender: self)
         }
         alertController.addAction(locationAction)
         
         // Cancel
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: "Cancel"), style: .Cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: "Cancel"), style: .cancel, handler: nil)
         alertController.addAction(cancelAction)
         
         // Present alert
-        presentViewController(alertController, animated: true, completion: nil)
+        present(alertController, animated: true, completion: nil)
     }
     
     /// Navigates into the action set view controller.
     private func addNewActionSet() {
-        performSegueWithIdentifier(Identifiers.addActionSetSegue, sender: self)
+        performSegue(withIdentifier: Identifiers.addActionSetSegue, sender: self)
     }
     
     /// Navigates into the browse accessory view controller.
     private func browseForAccessories() {
-        performSegueWithIdentifier(Identifiers.addAccessoriesSegue, sender: self)
+        performSegue(withIdentifier: Identifiers.addAccessoriesSegue, sender: self)
     }
     
     // MARK: Dialog Creation Methods
@@ -677,28 +677,28 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         - parameter object: The HomeKit object to remove.
         - parameter completionHandler: The closure to invote when the removal has been completed.
     */
-    private func removeHomeKitObject(object: AnyObject, completionHandler: NSError? -> Void) {
+    private func removeHomeKitObject(_ object: AnyObject, completionHandler: @escaping (NSError?) -> Void) {
         switch object {
             case let actionSet as HMActionSet:
                 home.removeActionSet(actionSet) { error in
-                    completionHandler(error)
+                    completionHandler(error as NSError?)
                     self.updateActionSetSection()
                 }
                 
             case let accessory as HMAccessory:
-                home.removeAccessory(accessory, completionHandler: completionHandler)
+                home.removeAccessory(accessory, completionHandler: completionHandler as! (Error?) -> Void)
                 
             case let room as HMRoom:
-                home.removeRoom(room, completionHandler: completionHandler)
+                home.removeRoom(room, completionHandler: completionHandler as! (Error?) -> Void)
                 
             case let zone as HMZone:
-                home.removeZone(zone, completionHandler: completionHandler)
+                home.removeZone(zone, completionHandler: completionHandler as! (Error?) -> Void)
                 
             case let trigger as HMTrigger:
-                home.removeTrigger(trigger, completionHandler: completionHandler)
+                home.removeTrigger(trigger, completionHandler: completionHandler as! (Error?) -> Void)
                 
             case let serviceGroup as HMServiceGroup:
-                home.removeServiceGroup(serviceGroup, completionHandler: completionHandler)
+                home.removeServiceGroup(serviceGroup, completionHandler: completionHandler as! (Error?) -> Void)
                 
             default:
                 fatalError("Attempted to remove unknown HomeKit object.")
@@ -710,8 +710,8 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - parameter name: The name of the new room.
     */
-    private func addRoomWithName(name: String) {
-        home.addRoomWithName(name) { newRoom, error in
+    private func addRoomWithName(_ name: String) {
+        home.addRoom(withName: name) { newRoom, error in
             if let error = error {
                 self.displayError(error)
                 return
@@ -726,8 +726,8 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - parameter name: The name of the new service group.
     */
-    private func addServiceGroupWithName(name: String) {
-        home.addServiceGroupWithName(name) { newGroup, error in
+    private func addServiceGroupWithName(_ name: String) {
+        home.addServiceGroup(withName: name) { newGroup, error in
             if let error = error {
                 self.displayError(error)
                 return
@@ -742,8 +742,8 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - parameter name: The name of the new zone.
     */
-    private func addZoneWithName(name: String) {
-        home.addZoneWithName(name) { newZone, error in
+    private func addZoneWithName(_ name: String) {
+        home.addZone(withName: name) { newZone, error in
             if let error = error {
                 self.displayError(error)
                 return
@@ -755,7 +755,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     
     /// Presents modal view for managing users.
     private func manageUsers() {
-        home.manageUsersWithCompletionHandler { error in
+        home.manageUsers { error in
             if let error = error {
                 self.displayError(error)
             }
@@ -769,7 +769,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - parameter actionSet: The `HMActionSet` to evaluate and execute.
     */
-    private func executeActionSet(actionSet: HMActionSet) {
+    private func executeActionSet(_ actionSet: HMActionSet) {
         if actionSet.actions.isEmpty {
             let alertTitle = NSLocalizedString("Empty Scene", comment: "Empty Scene")
 
@@ -792,11 +792,11 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     
         - parameter object: The HomeKit object to add.
     */
-    private func didAddHomeKitObject(object: AnyObject?) {
+    private func didAddHomeKitObject(_ object: AnyObject?) {
         if let object = object {
             objectCollection.append(object)
             if let newObjectIndexPath = objectCollection.indexPathOfObject(object) {
-                tableView.insertRowsAtIndexPaths([newObjectIndexPath], withRowAnimation: .Automatic)
+                tableView.insertRows(at: [newObjectIndexPath], with: .automatic)
             }
         }
     }
@@ -806,10 +806,10 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     
         - parameter object: The HomeKit object that was modified.
     */
-    private func didModifyHomeKitObject(object: AnyObject?) {
+    private func didModifyHomeKitObject(_ object: AnyObject?) {
         if let object = object,
-               objectIndexPath = objectCollection.indexPathOfObject(object) {
-            tableView.reloadRowsAtIndexPaths([objectIndexPath], withRowAnimation: .Automatic)
+               let objectIndexPath = objectCollection.indexPathOfObject(object) {
+            tableView.reloadRows(at: [objectIndexPath], with: .automatic)
         }
     }
     
@@ -818,11 +818,11 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - parameter object: The HomeKit object to remove.
     */
-    private func didRemoveHomeKitObject(object: AnyObject?) {
+    private func didRemoveHomeKitObject(_ object: AnyObject?) {
         if let object = object,
-               objectIndexPath = objectCollection.indexPathOfObject(object) {
+               let objectIndexPath = objectCollection.indexPathOfObject(object) {
             objectCollection.remove(object)
-            tableView.deleteRowsAtIndexPaths([objectIndexPath], withRowAnimation: .Automatic)
+            tableView.deleteRows(at: [objectIndexPath], with: .automatic)
         }
     }
     
@@ -833,97 +833,101 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     
     // MARK: HMHomeDelegate Methods
     
-    func homeDidUpdateName(home: HMHome) {
+    func homeDidUpdateName(_ home: HMHome) {
         navigationItem.title = home.name
         reloadTable()
     }
     
-    func home(home: HMHome, didAddAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didAddAccessory accessory: HMAccessory) {
         didAddHomeKitObject(accessory)
         accessory.delegate = self
     }
     
-    func home(home: HMHome, didRemoveAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didRemoveAccessory accessory: HMAccessory) {
         didRemoveHomeKitObject(accessory)
     }
     
     // MARK: Triggers
     
-    func home(home: HMHome, didAddTrigger trigger: HMTrigger) {
+    func home(_ home: HMHome, didAddTrigger trigger: HMTrigger) {
         didAddHomeKitObject(trigger)
     }
     
-    func home(home: HMHome, didRemoveTrigger trigger: HMTrigger) {
+    func home(_ home: HMHome, didRemoveTrigger trigger: HMTrigger) {
         didRemoveHomeKitObject(trigger)
     }
     
-    func home(home: HMHome, didUpdateNameForTrigger trigger: HMTrigger) {
+    func home(_ home: HMHome, didUpdateNameFor trigger: HMTrigger) {
         didModifyHomeKitObject(trigger)
     }
     
     // MARK: Service Groups
     
-    func home(home: HMHome, didAddServiceGroup group: HMServiceGroup) {
+    func home(_ home: HMHome, didAddServiceGroup group: HMServiceGroup) {
         didAddHomeKitObject(group)
     }
     
-    func home(home: HMHome, didRemoveServiceGroup group: HMServiceGroup) {
+    func home(_ home: HMHome, didRemoveServiceGroup group: HMServiceGroup) {
         didRemoveHomeKitObject(group)
     }
     
-    func home(home: HMHome, didUpdateNameForServiceGroup group: HMServiceGroup) {
+    @objc(home:didUpdateNameForGroup:)
+    func home(_ home: HMHome, didUpdateNameFor group: HMServiceGroup) {
         didModifyHomeKitObject(group)
     }
     
     // MARK: Action Sets
     
-    func home(home: HMHome, didAddActionSet actionSet: HMActionSet) {
+    func home(_ home: HMHome, didAddActionSet actionSet: HMActionSet) {
         didAddHomeKitObject(actionSet)
     }
     
-    func home(home: HMHome, didRemoveActionSet actionSet: HMActionSet) {
+    func home(_ home: HMHome, didRemoveActionSet actionSet: HMActionSet) {
         didRemoveHomeKitObject(actionSet)
     }
     
-    func home(home: HMHome, didUpdateNameForActionSet actionSet: HMActionSet) {
+    @objc(home:didUpdateNameForActionSet:)
+    func home(_ home: HMHome, didUpdateNameFor actionSet: HMActionSet) {
         didModifyHomeKitObject(actionSet)
     }
     
     // MARK: Zones
     
-    func home(home: HMHome, didAddZone zone: HMZone) {
+    func home(_ home: HMHome, didAddZone zone: HMZone) {
         didAddHomeKitObject(zone)
     }
     
-    func home(home: HMHome, didRemoveZone zone: HMZone) {
+    func home(_ home: HMHome, didRemoveZone zone: HMZone) {
         didRemoveHomeKitObject(zone)
     }
     
-    func home(home: HMHome, didUpdateNameForZone zone: HMZone) {
+    @objc(home:didUpdateNameForZone:)
+    func home(_ home: HMHome, didUpdateNameFor zone: HMZone) {
         didModifyHomeKitObject(zone)
     }
     
     // MARK: Rooms
     
-    func home(home: HMHome, didAddRoom room: HMRoom) {
+    func home(_ home: HMHome, didAddRoom room: HMRoom) {
         didAddHomeKitObject(room)
     }
     
-    func home(home: HMHome, didRemoveRoom room: HMRoom) {
+    func home(_ home: HMHome, didRemoveRoom room: HMRoom) {
         didRemoveHomeKitObject(room)
     }
     
-    func home(home: HMHome, didUpdateNameForRoom room: HMRoom) {
+    @objc(home:didUpdateNameForRoom:)
+    func home(_ home: HMHome, didUpdateNameFor room: HMRoom) {
         didModifyHomeKitObject(room)
     }
 
     // MARK: Accessories
     
-    func accessoryDidUpdateReachability(accessory: HMAccessory) {
+    func accessoryDidUpdateReachability(_ accessory: HMAccessory) {
         didModifyHomeKitObject(accessory)
     }
     
-    func accessoryDidUpdateName(accessory: HMAccessory) {
+    func accessoryDidUpdateName(_ accessory: HMAccessory) {
         didModifyHomeKitObject(accessory)
     }
 }

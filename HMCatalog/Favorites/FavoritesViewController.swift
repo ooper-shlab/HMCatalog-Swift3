@@ -57,7 +57,7 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
     }
     
     /// Prepares HomeKit objects and reloads view.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
         registerAsDelegate()
@@ -68,7 +68,7 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
     }
     
     /// Disables notifications and "unregisters" as the delegate for the home manager.
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         setNotificationsEnabled(false)
 
@@ -79,21 +79,21 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
     /// Registers for all types of characteristic cells.
     private func registerReuseIdentifiers() {
         let characteristicNib = UINib(nibName: Identifiers.characteristicCell, bundle: nil)
-        tableView.registerNib(characteristicNib, forCellReuseIdentifier: Identifiers.characteristicCell)
+        tableView.register(characteristicNib, forCellReuseIdentifier: Identifiers.characteristicCell)
         
         let sliderNib = UINib(nibName: Identifiers.sliderCharacteristicCell, bundle: nil)
-        tableView.registerNib(sliderNib, forCellReuseIdentifier: Identifiers.sliderCharacteristicCell)
+        tableView.register(sliderNib, forCellReuseIdentifier: Identifiers.sliderCharacteristicCell)
         
         let switchNib = UINib(nibName: Identifiers.switchCharacteristicCell, bundle: nil)
-        tableView.registerNib(switchNib, forCellReuseIdentifier: Identifiers.switchCharacteristicCell)
+        tableView.register(switchNib, forCellReuseIdentifier: Identifiers.switchCharacteristicCell)
         
         let segmentedNib = UINib(nibName: Identifiers.segmentedControlCharacteristicCell, bundle: nil)
-        tableView.registerNib(segmentedNib, forCellReuseIdentifier: Identifiers.segmentedControlCharacteristicCell)
+        tableView.register(segmentedNib, forCellReuseIdentifier: Identifiers.segmentedControlCharacteristicCell)
         
         let textNib = UINib(nibName: Identifiers.textCharacteristicCell, bundle: nil)
-        tableView.registerNib(textNib, forCellReuseIdentifier: Identifiers.textCharacteristicCell)
+        tableView.register(textNib, forCellReuseIdentifier: Identifiers.textCharacteristicCell)
         
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Identifiers.serviceTypeCell)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: Identifiers.serviceTypeCell)
     }
     
     // MARK: Table View Methods
@@ -104,7 +104,7 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
         
         - returns:  The favorite accessories count.
     */
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         let sectionCount = favoriteAccessories.count
         
         if sectionCount == 0 {
@@ -120,7 +120,7 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
     }
     
     /// - returns:  The number of characteristics for accessory represented by the section index.
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let accessory = favoriteAccessories[section]
 
         let characteristics = FavoritesManager.sharedManager.favoriteCharacteristicsForAccessory(accessory)
@@ -132,10 +132,10 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
         Dequeues the appropriate characteristic cell for the characteristic at the
         given index path and configures the cell based on view configurations.
     */
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let characteristics = FavoritesManager.sharedManager.favoriteCharacteristicsForAccessory(favoriteAccessories[indexPath.section])
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let characteristics = FavoritesManager.sharedManager.favoriteCharacteristicsForAccessory(favoriteAccessories[(indexPath as NSIndexPath).section])
         
-        let characteristic = characteristics[indexPath.row]
+        let characteristic = characteristics[(indexPath as NSIndexPath).row]
         
         var reuseIdentifier = Identifiers.characteristicCell
 
@@ -155,7 +155,7 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
             reuseIdentifier = Identifiers.textCharacteristicCell
         }
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath) as! CharacteristicCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! CharacteristicCell
 
         cell.showsFavorites = showsFavorites
         cell.delegate = cellDelegate
@@ -165,14 +165,14 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
     }
     
     /// - returns:  The name of the accessory at the specified index path.
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return favoriteAccessories[section].name
     }
     
     // MARK: IBAction Methods
     
     /// Toggles `showsFavorites`, which will also reload the view.
-    @IBAction func didTapEdit(sender: UIBarButtonItem) {
+    @IBAction func didTapEdit(_ sender: UIBarButtonItem) {
         showsFavorites = !showsFavorites
     }
     
@@ -186,7 +186,7 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
     private func reloadData() {
         favoriteAccessories = FavoritesManager.sharedManager.favoriteAccessories
 
-        editButton.enabled = !favoriteAccessories.isEmpty
+        editButton.isEnabled = !favoriteAccessories.isEmpty
         
         tableView.reloadData()
     }
@@ -197,7 +197,7 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
         
         - parameter notificationsEnabled: A `Bool` representing enabled or disabled.
     */
-    private func setNotificationsEnabled(notificationsEnabled: Bool) {
+    private func setNotificationsEnabled(_ notificationsEnabled: Bool) {
         for characteristic in FavoritesManager.sharedManager.favoriteCharacteristics {
             if characteristic.supportsEventNotification {
                 characteristic.enableNotification(notificationsEnabled) { error in
@@ -224,31 +224,31 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
     // MARK: HMAccessoryDelegate Methods
     
     /// Update the view to disable cells with unavailable accessories.
-    func accessoryDidUpdateReachability(accessory: HMAccessory) {
+    func accessoryDidUpdateReachability(_ accessory: HMAccessory) {
         reloadData()
     }
     
     /// Search for the cell corresponding to that characteristic and update its value.
-    func accessory(accessory: HMAccessory, service: HMService, didUpdateValueForCharacteristic characteristic: HMCharacteristic) {
+    func accessory(_ accessory: HMAccessory, service: HMService, didUpdateValueFor characteristic: HMCharacteristic) {
         guard let accessory = characteristic.service?.accessory else { return }
 
-        guard let indexOfAccessory = favoriteAccessories.indexOf(accessory) else { return }
+        guard let indexOfAccessory = favoriteAccessories.index(of: accessory) else { return }
         
         let favoriteCharacteristics = FavoritesManager.sharedManager.favoriteCharacteristicsForAccessory(accessory)
         
-        guard let indexOfCharacteristic = favoriteCharacteristics.indexOf(characteristic) else { return }
+        guard let indexOfCharacteristic = favoriteCharacteristics.index(of: characteristic) else { return }
         
-        let indexPath = NSIndexPath(forRow: indexOfCharacteristic, inSection: indexOfAccessory)
+        let indexPath = IndexPath(row: indexOfCharacteristic, section: indexOfAccessory)
         
-        let cell = tableView.cellForRowAtIndexPath(indexPath) as! CharacteristicCell
+        let cell = tableView.cellForRow(at: indexPath) as! CharacteristicCell
         
-        cell.setValue(characteristic.value, notify: false)
+        cell.setValue(characteristic.value as? CellValueType, notify: false)
     }
     
     // MARK: HMHomeManagerDelegate Methods
     
     /// Reloads views and re-configures characteristics.
-    func homeManagerDidUpdateHomes(manager: HMHomeManager) {
+    func homeManagerDidUpdateHomes(_ manager: HMHomeManager) {
         registerAsDelegate()
         setNotificationsEnabled(true)
         reloadData()

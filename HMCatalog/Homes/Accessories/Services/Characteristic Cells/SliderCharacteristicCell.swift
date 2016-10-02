@@ -21,7 +21,7 @@ class SliderCharacteristicCell: CharacteristicCell {
    override var characteristic: HMCharacteristic! {
       didSet {
          valueSlider.alpha = enabled ? 1.0 : CharacteristicCell.DisabledAlpha
-         valueSlider.userInteractionEnabled = enabled
+         valueSlider.isUserInteractionEnabled = enabled
       }
       
       willSet(newCharacteristic) {
@@ -32,9 +32,9 @@ class SliderCharacteristicCell: CharacteristicCell {
    }
    
    /// If notify is false, sets the valueSlider's represented value.
-   override func setValue(newValue: AnyObject?, notify: Bool) {
+   override func setValue(_ newValue: CellValueType?, notify: Bool) {
       super.setValue(newValue, notify: notify)
-      if let newValue = newValue as? NSNumber where !notify {
+      if let newValue = newValue as? NSNumber , !notify {
          valueSlider.value = newValue.floatValue
       }
    }
@@ -47,10 +47,10 @@ class SliderCharacteristicCell: CharacteristicCell {
    
       - returns:  The value adjusted to align with a step value.
    */
-   func roundedValueForSliderValue(value: Float) -> Float {
+   func roundedValueForSliderValue(_ value: Float) -> Float {
       if let metadata = characteristic.metadata,
-         stepValue = metadata.stepValue as? Float
-         where stepValue > 0 {
+         let stepValue = metadata.stepValue as? Float
+         , stepValue > 0 {
             let newStep = roundf(value / stepValue)
             let stepped = newStep * stepValue
             return stepped
@@ -69,9 +69,9 @@ class SliderCharacteristicCell: CharacteristicCell {
    
       - parameter slider: The slider that changed.
    */
-   func didChangeSliderValue(slider: UISlider) {
+   func didChangeSliderValue(_ slider: UISlider) {
       let value = roundedValueForSliderValue(slider.value)
-      setValue(value, notify: true)
+      setValue(value as NSNumber?, notify: true)
    }
    
 }

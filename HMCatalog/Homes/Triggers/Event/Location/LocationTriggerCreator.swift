@@ -43,12 +43,12 @@ class LocationTriggerCreator: EventTriggerCreator, MapViewControllerDelegate {
         if let region = targetRegion {
             prepareRegion()
             if let locationEvent = locationEvent {
-                dispatch_group_enter(saveTriggerGroup)
+                saveTriggerGroup.enter()
                 locationEvent.updateRegion(region) { error in
                     if let error = error {
-                        self.errors.append(error)
+                        self.errors.append(error as NSError)
                     }
-                    dispatch_group_leave(self.saveTriggerGroup)
+                    self.saveTriggerGroup.leave()
                 }
             }
         }
@@ -88,7 +88,7 @@ class LocationTriggerCreator: EventTriggerCreator, MapViewControllerDelegate {
         
         - parameter region: A new `CLCircularRegion`, provided by the delegate.
     */
-    func mapViewDidUpdateRegion(region: CLCircularRegion) {
+    func mapViewDidUpdateRegion(_ region: CLCircularRegion) {
         targetRegion = region
     }
 }

@@ -17,7 +17,7 @@ class EventTriggerCreator: TriggerCreator, CharacteristicCellDelegate {
     // MARK: Properties
     
     /// A mapping of `HMCharacteristic`s to their values.
-    private let conditionValueMap = NSMapTable.strongToStrongObjectsMapTable()
+    private let conditionValueMap = NSMapTable<HMCharacteristic, CellValueType>.strongToStrongObjects()
     
     private var eventTrigger: HMEventTrigger? {
         return trigger as? HMEventTrigger
@@ -31,7 +31,7 @@ class EventTriggerCreator: TriggerCreator, CharacteristicCellDelegate {
     */
     var originalConditions: [NSPredicate] {
         if let compoundPredicate = eventTrigger?.predicate as? NSCompoundPredicate,
-            subpredicates = compoundPredicate.subpredicates as? [NSPredicate] {
+            let subpredicates = compoundPredicate.subpredicates as? [NSPredicate] {
                 return subpredicates
         }
 
@@ -46,7 +46,7 @@ class EventTriggerCreator: TriggerCreator, CharacteristicCellDelegate {
         
         - parameter predicate: The new `NSPredicate` to add.
     */
-    func addCondition(predicate: NSPredicate) {
+    func addCondition(_ predicate: NSPredicate) {
         conditions.append(predicate)
     }
     
@@ -55,9 +55,9 @@ class EventTriggerCreator: TriggerCreator, CharacteristicCellDelegate {
         
         - parameter predicate: The `NSPredicate` to remove.
     */
-    func removeCondition(predicate: NSPredicate) {
-        if let index = conditions.indexOf(predicate) {
-            conditions.removeAtIndex(index)
+    func removeCondition(_ predicate: NSPredicate) {
+        if let index = conditions.index(of: predicate) {
+            conditions.remove(at: index)
         }
     }
     
@@ -66,11 +66,11 @@ class EventTriggerCreator: TriggerCreator, CharacteristicCellDelegate {
                     the pending conditions.
     */
     func newPredicate() -> NSPredicate {
-        return NSCompoundPredicate(type: .AndPredicateType, subpredicates: conditions)
+        return NSCompoundPredicate(type: .and, subpredicates: conditions)
     }
     
     /// Handles the value update and stores the value in the condition map.
-    func characteristicCell(cell: CharacteristicCell, didUpdateValue value: AnyObject, forCharacteristic characteristic: HMCharacteristic, immediate: Bool) {
+    func characteristicCell(_ cell: CharacteristicCell, didUpdateValue value: CellValueType, forCharacteristic characteristic: HMCharacteristic, immediate: Bool) {
         conditionValueMap.setObject(value, forKey: characteristic)
     }
     
@@ -78,22 +78,22 @@ class EventTriggerCreator: TriggerCreator, CharacteristicCellDelegate {
         Tries to use the value from the condition-value map, but falls back
         to reading the characteristic's value from HomeKit.
     */
-    func characteristicCell(cell: CharacteristicCell, readInitialValueForCharacteristic characteristic: HMCharacteristic, completion: (AnyObject?, NSError?) -> Void) {
-        if let value = conditionValueMap.objectForKey(characteristic) {
+    func characteristicCell(_ cell: CharacteristicCell, readInitialValueForCharacteristic characteristic: HMCharacteristic, completion: @escaping (CellValueType?, Error?) -> Void) {
+        if let value = conditionValueMap.object(forKey: characteristic) {
             completion(value, nil)
             return
         }
         
-        characteristic.readValueWithCompletionHandler { error in
+        characteristic.readValue { error in
             /*
                 The user may have updated the cell value while the
                 read was happening. We check the map one more time.
             */
-            if let value = self.conditionValueMap.objectForKey(characteristic) {
+            if let value = self.conditionValueMap.object(forKey: characteristic) {
                 completion(value, nil)
             }
             else {
-                completion(characteristic.value, error)
+                completion(characteristic.value as? CellValueType, error as NSError?)
             }
         }
     }
@@ -106,19 +106,19 @@ class EventTriggerCreator: TriggerCreator, CharacteristicCellDelegate {
     */
     func savePredicate() {
         updatePredicates()
-        dispatch_group_enter(saveTriggerGroup)
+        saveTriggerGroup.enter()
         eventTrigger?.updatePredicate(newPredicate()) { error in
             if let error = error {
-                self.errors.append(error)
+                self.errors.append(error as NSError)
             }
-            dispatch_group_leave(self.saveTriggerGroup)
+            self.saveTriggerGroup.leave()
         }
     }
     
     /// Generates predicates from the characteristic-value map and adds them to the pending conditions.
     func updatePredicates() {
         for (characteristic, value) in pairsFromMapTable(conditionValueMap) {
-            let predicate = HMEventTrigger.predicateForEvaluatingTriggerWithCharacteristic(characteristic, relatedBy: .EqualToPredicateOperatorType, toValue: value)
+            let predicate = HMEventTrigger.predicateForEvaluatingTrigger(characteristic, relatedBy: .equalTo, toValue: value)
             addCondition(predicate)
         }
 
@@ -130,11 +130,11 @@ class EventTriggerCreator: TriggerCreator, CharacteristicCellDelegate {
         
         - returns:  Tuples representing `HMCharacteristic`s and their associated return trigger values.
     */
-    func pairsFromMapTable(table: NSMapTable) -> [(HMCharacteristic, NSCopying)] {
+    func pairsFromMapTable<Key, ValueType>(_ table: NSMapTable<Key, ValueType>) -> [(Key, ValueType)] {
         return table.keyEnumerator().allObjects.map { object in
-            let characteristic = object as! HMCharacteristic
-            let triggerValue = table.objectForKey(object) as! NSCopying
-            return (characteristic, triggerValue)
+            let characteristic = object as! Key
+            let triggerValue = table.object(forKey: characteristic)
+            return (characteristic, triggerValue!)
         }
     }
 }

@@ -27,19 +27,19 @@ extension HMService: Nameable {}
 extension HMServiceGroup: Nameable {}
 extension HMTrigger: Nameable {}
 
-extension CollectionType where Generator.Element: Nameable {
+extension Collection where Iterator.Element: Nameable {
     /**
         Generates a new array from the original collection,
         sorted by localized name.
         
         - returns:  New array sorted by localized name.
     */
-    func sortByLocalizedName() -> [Generator.Element] {
-        return sort { return $0.name.localizedCompare($1.name) == .OrderedAscending }
+    func sortByLocalizedName() -> [Iterator.Element] {
+        return sorted { return $0.name.localizedCompare($1.name) == .orderedAscending }
     }
 }
 
-extension CollectionType where Generator.Element: HMActionSet {
+extension Collection where Iterator.Element: HMActionSet {
     /**
         Generates a new array from the original collection,
         sorted by built-in first, then user-defined sorted
@@ -48,20 +48,20 @@ extension CollectionType where Generator.Element: HMActionSet {
         - returns:  New array sorted by localized name.
     */
     func sortByTypeAndLocalizedName() -> [HMActionSet] {
-        return sort { (actionSet1, actionSet2) -> Bool in
+        return sorted { (actionSet1, actionSet2) -> Bool in
             if actionSet1.isBuiltIn != actionSet2.isBuiltIn {
                 // If comparing a built-in and a user-defined, the built-in is ranked first.
                 return actionSet1.isBuiltIn
             }
             else if actionSet1.isBuiltIn && actionSet2.isBuiltIn {
                 // If comparing two built-ins, we follow a standard ranking
-                let firstIndex = HMActionSet.Constants.builtInActionSetTypes.indexOf(actionSet1.actionSetType) ?? NSNotFound
-                let secondIndex = HMActionSet.Constants.builtInActionSetTypes.indexOf(actionSet2.actionSetType) ?? NSNotFound
+                let firstIndex = HMActionSet.Constants.builtInActionSetTypes.index(of: actionSet1.actionSetType) ?? NSNotFound
+                let secondIndex = HMActionSet.Constants.builtInActionSetTypes.index(of: actionSet2.actionSetType) ?? NSNotFound
                 return firstIndex < secondIndex
             }
             else {
                 // If comparing two user-defines, sort by localized name.
-                return actionSet1.name.localizedCompare(actionSet2.name) == .OrderedAscending
+                return actionSet1.name.localizedCompare(actionSet2.name) == .orderedAscending
             }
         }
     }

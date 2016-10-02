@@ -28,23 +28,23 @@ class ZoneViewController: HMCatalogViewController {
     // MARK: View Methods
     
     /// Reload the data and configure the view.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         title = homeZone.name
         reloadData()
     }
     
     /// If our data is invalid, pop the view controller.
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if shouldPopViewController() {
-            navigationController?.popViewControllerAnimated(true)
+            _ = navigationController?.popViewController(animated: true)
         }
     }
     
     /// Provide the zone to `AddRoomViewController`.
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        super.prepareForSegue(segue, sender: sender)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
         if segue.identifier == Identifiers.addRoomsSegue {
             let addViewController = segue.intendedDestinationViewController as! AddRoomViewController
             addViewController.homeZone = homeZone
@@ -65,8 +65,8 @@ class ZoneViewController: HMCatalogViewController {
     }
     
     /// - returns:  The `NSIndexPath` where the 'Add Cell' should be located.
-    private var addIndexPath: NSIndexPath {
-        return NSIndexPath(forRow: rooms.count, inSection: 0)
+    private var addIndexPath: IndexPath {
+        return IndexPath(row: rooms.count, section: 0)
     }
     
     /**
@@ -75,8 +75,8 @@ class ZoneViewController: HMCatalogViewController {
         - returns:  `true` if the indexPath should contain
                     an 'add' cell, `false` otherwise
     */
-    private func indexPathIsAdd(indexPath: NSIndexPath) -> Bool {
-        return indexPath.row == addIndexPath.row
+    private func indexPathIsAdd(_ indexPath: IndexPath) -> Bool {
+        return (indexPath as NSIndexPath).row == (addIndexPath as NSIndexPath).row
     }
     
     /**
@@ -86,7 +86,7 @@ class ZoneViewController: HMCatalogViewController {
         the user to add a room.
     */
     private func reloadAddIndexPath() {
-        tableView.reloadRowsAtIndexPaths([addIndexPath], withRowAnimation: .Automatic)
+        tableView.reloadRows(at: [addIndexPath], with: .automatic)
     }
     
     /**
@@ -95,14 +95,14 @@ class ZoneViewController: HMCatalogViewController {
         
         - parameter room: The new `HMRoom` to add.
     */
-    private func didAddRoom(room: HMRoom) {
+    private func didAddRoom(_ room: HMRoom) {
         rooms.append(room)
 
         sortRooms()
         
-        if let newRoomIndex = rooms.indexOf(room) {
-            let newRoomIndexPath = NSIndexPath(forRow: newRoomIndex, inSection: 0)
-            tableView.insertRowsAtIndexPaths([newRoomIndexPath], withRowAnimation: .Automatic)
+        if let newRoomIndex = rooms.index(of: room) {
+            let newRoomIndexPath = IndexPath(row: newRoomIndex, section: 0)
+            tableView.insertRows(at: [newRoomIndexPath], with: .automatic)
         }
         
         reloadAddIndexPath()
@@ -114,11 +114,11 @@ class ZoneViewController: HMCatalogViewController {
         
         - parameter room: The `HMRoom` to remove.
     */
-    private func didRemoveRoom(room: HMRoom) {
-        if let roomIndex = rooms.indexOf(room) {
-            rooms.removeAtIndex(roomIndex)
-            let roomIndexPath = NSIndexPath(forRow: roomIndex, inSection: 0)
-            tableView.deleteRowsAtIndexPaths([roomIndexPath], withRowAnimation: .Automatic)
+    private func didRemoveRoom(_ room: HMRoom) {
+        if let roomIndex = rooms.index(of: room) {
+            rooms.remove(at: roomIndex)
+            let roomIndexPath = IndexPath(row: roomIndex, section: 0)
+            tableView.deleteRows(at: [roomIndexPath], with: .automatic)
         }
 
         reloadAddIndexPath()
@@ -129,10 +129,10 @@ class ZoneViewController: HMCatalogViewController {
         
         - parameter room: The `HMRoom` to reload.
     */
-    private func didUpdateRoom(room: HMRoom) {
-        if let roomIndex = rooms.indexOf(room) {
-            let roomIndexPath = NSIndexPath(forRow: roomIndex, inSection: 0)
-            tableView.reloadRowsAtIndexPaths([roomIndexPath], withRowAnimation: .Automatic)
+    private func didUpdateRoom(_ room: HMRoom) {
+        if let roomIndex = rooms.index(of: room) {
+            let roomIndexPath = IndexPath(row: roomIndex, section: 0)
+            tableView.reloadRows(at: [roomIndexPath], with: .automatic)
         }
     }
     
@@ -141,7 +141,7 @@ class ZoneViewController: HMCatalogViewController {
         
         - parameter room: The `HMRoom` to remove.
     */
-    private func removeRoom(room: HMRoom) {
+    private func removeRoom(_ room: HMRoom) {
         didRemoveRoom(room)
         homeZone.removeRoom(room) { error in
             if let error = error {
@@ -175,21 +175,21 @@ class ZoneViewController: HMCatalogViewController {
     // MARK: Table View Methods
     
     /// - returns:  The number of rooms in the zone, plus 1 for the 'add' row.
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return rooms.count + 1
     }
     
     /// - returns:  A cell containing the name of an HMRoom.
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPathIsAdd(indexPath) {
             let reuseIdentifier = home.isAdmin && canAddRoom ? Identifiers.addCell : Identifiers.disabledAddCell
 
-            return tableView.dequeueReusableCellWithIdentifier(reuseIdentifier, forIndexPath: indexPath)
+            return tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         }
 
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.roomCell, forIndexPath: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.roomCell, for: indexPath)
         
-        cell.textLabel?.text = rooms[indexPath.row].name
+        cell.textLabel?.text = rooms[(indexPath as NSIndexPath).row].name
         
         return cell
     }
@@ -198,14 +198,14 @@ class ZoneViewController: HMCatalogViewController {
         - returns:  `true` if the cell is anything but an 'add' cell;
                     `false` otherwise.
     */
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return home.isAdmin && !indexPathIsAdd(indexPath)
     }
     
     /// Deletes the room at the provided index path.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            let room = rooms[indexPath.row]
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let room = rooms[(indexPath as NSIndexPath).row]
 
             removeRoom(room)
         }
@@ -214,21 +214,21 @@ class ZoneViewController: HMCatalogViewController {
     // MARK: HMHomeDelegate Methods
     
     /// If our zone was removed, pop the view controller.
-    func home(home: HMHome, didRemoveZone zone: HMZone) {
+    func home(_ home: HMHome, didRemoveZone zone: HMZone) {
         if zone == homeZone{
-            navigationController?.popViewControllerAnimated(true)
+            _ = navigationController?.popViewController(animated: true)
         }
     }
     
     /// If our zone was renamed, update the title.
-    func home(home: HMHome, didUpdateNameForZone zone: HMZone) {
+    func home(_ home: HMHome, didUpdateNameForZone zone: HMZone) {
         if zone == homeZone {
             title = zone.name
         }
     }
 
     /// Update the row for the room.
-    func home(home: HMHome, didUpdateNameForRoom room: HMRoom) {
+    func home(_ home: HMHome, didUpdateNameForRoom room: HMRoom) {
         didUpdateRoom(room)
     }
     
@@ -236,7 +236,7 @@ class ZoneViewController: HMCatalogViewController {
         A room has been added, we may be able to add it to the zone.
         Reload the 'addIndexPath'
     */
-    func home(home: HMHome, didAddRoom room: HMRoom) {
+    func home(_ home: HMHome, didAddRoom room: HMRoom) {
         reloadAddIndexPath()
     }
     
@@ -244,19 +244,19 @@ class ZoneViewController: HMCatalogViewController {
         A room has been removed, attempt to remove it from the room.
         This will always reload the 'addIndexPath'.
     */
-    func home(home: HMHome, didRemoveRoom room: HMRoom) {
+    func home(_ home: HMHome, didRemoveRoom room: HMRoom) {
         didRemoveRoom(room)
     }
     
     /// If the room was added to our zone, add it to the view.
-    func home(home: HMHome, didAddRoom room: HMRoom, toZone zone: HMZone) {
+    func home(_ home: HMHome, didAddRoom room: HMRoom, toZone zone: HMZone) {
         if zone == homeZone {
             didAddRoom(room)
         }
     }
     
     /// If the room was removed from our zone, remove it from the view.
-    func home(home: HMHome, didRemoveRoom room: HMRoom, fromZone zone: HMZone) {
+    func home(_ home: HMHome, didRemoveRoom room: HMRoom, fromZone zone: HMZone) {
         if zone == homeZone {
             didRemoveRoom(room)
         }

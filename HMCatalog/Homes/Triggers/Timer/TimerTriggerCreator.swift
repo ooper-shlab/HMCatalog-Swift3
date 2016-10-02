@@ -13,10 +13,10 @@ import HomeKit
     of timer triggers.
 */
 class TimerTriggerCreator: TriggerCreator {
-    static let RecurrenceComponents: [NSCalendarUnit] = [
-        .Hour,
-        .Day,
-        .WeekOfYear
+    static let RecurrenceComponents: [NSCalendar.Unit] = [
+        .hour,
+        .day,
+        .weekOfYear
     ]
     
     // MARK: Properties
@@ -27,11 +27,11 @@ class TimerTriggerCreator: TriggerCreator {
     
     var selectedRecurrenceIndex = NSNotFound
     
-    var rawFireDate = NSDate()
-    var fireDate: NSDate {
-        let flags: NSCalendarUnit = [.Year, .Weekday, .Month, .Day, .Hour, .Minute]
-        let dateComponents = NSCalendar.currentCalendar().components(flags, fromDate: self.rawFireDate)
-        let probableDate = NSCalendar.currentCalendar().dateFromComponents(dateComponents)
+    var rawFireDate = Date()
+    var fireDate: Date {
+        let flags: NSCalendar.Unit = [.year, .weekday, .month, .day, .hour, .minute]
+        let dateComponents = (Calendar.current as NSCalendar).components(flags, from: self.rawFireDate)
+        let probableDate = Calendar.current.date(from: dateComponents)
         return probableDate ?? rawFireDate
     }
     
@@ -48,7 +48,7 @@ class TimerTriggerCreator: TriggerCreator {
     
     /// - returns:  A new `HMTimerTrigger` with the stored configurations.
     override func newTrigger() -> HMTrigger? {
-        return HMTimerTrigger(name: name, fireDate: fireDate, timeZone: NSCalendar.currentCalendar().timeZone, recurrence: recurrenceComponents, recurrenceCalendar: nil)
+        return HMTimerTrigger(name: name, fireDate: fireDate, timeZone: Calendar.current.timeZone, recurrence: recurrenceComponents, recurrenceCalendar: nil)
     }
     
     /// Updates the fire date and recurrence of the trigger.
@@ -65,20 +65,20 @@ class TimerTriggerCreator: TriggerCreator {
         - returns: An NSDateComponent where either `weekOfYear`,
                    `hour`, or `day` is set to 1.
     */
-    var recurrenceComponents:NSDateComponents? {
+    var recurrenceComponents:DateComponents? {
         if selectedRecurrenceIndex == NSNotFound {
             return nil
         }
-        let recurrenceComponents = NSDateComponents()
+        var recurrenceComponents = DateComponents()
         let unit = TimerTriggerCreator.RecurrenceComponents[selectedRecurrenceIndex]
         switch unit {
-            case NSCalendarUnit.WeekOfYear:
+            case NSCalendar.Unit.weekOfYear:
                 recurrenceComponents.weekOfYear = 1
             
-            case NSCalendarUnit.Hour:
+            case NSCalendar.Unit.hour:
                 recurrenceComponents.hour = 1
             
-            case NSCalendarUnit.Day:
+            case NSCalendar.Unit.day:
                 recurrenceComponents.day = 1
             
             default:
@@ -95,20 +95,20 @@ class TimerTriggerCreator: TriggerCreator {
         
         - returns: An index for the date components.
     */
-    func recurrenceIndexFromDateComponents(components: NSDateComponents?) -> Int {
+    func recurrenceIndexFromDateComponents(_ components: DateComponents?) -> Int {
         guard let components = components else { return NSNotFound }
-        var unit: NSCalendarUnit?
+        var unit: NSCalendar.Unit?
         if components.day == 1 {
-            unit = NSCalendarUnit.Day
+            unit = NSCalendar.Unit.day
         }
         else if components.weekOfYear == 1 {
-            unit = NSCalendarUnit.WeekOfYear
+            unit = NSCalendar.Unit.weekOfYear
         }
         else if components.hour == 1 {
-            unit = NSCalendarUnit.Hour
+            unit = NSCalendar.Unit.hour
         }
         if let unit = unit {
-            return TimerTriggerCreator.RecurrenceComponents.indexOf(unit) ?? NSNotFound
+            return TimerTriggerCreator.RecurrenceComponents.index(of: unit) ?? NSNotFound
         }
         return NSNotFound
     }
@@ -123,12 +123,12 @@ class TimerTriggerCreator: TriggerCreator {
         if timerTrigger?.fireDate == fireDate {
             return
         }
-        dispatch_group_enter(saveTriggerGroup)
+        saveTriggerGroup.enter()
         timerTrigger?.updateFireDate(fireDate) { error in
             if let error = error {
-                self.errors.append(error)
+                self.errors.append(error as NSError)
             }
-            dispatch_group_leave(self.saveTriggerGroup)
+            self.saveTriggerGroup.leave()
         }
     }
     
@@ -142,12 +142,12 @@ class TimerTriggerCreator: TriggerCreator {
         if recurrenceComponents == timerTrigger?.recurrence {
             return
         }
-        dispatch_group_enter(saveTriggerGroup)
+        saveTriggerGroup.enter()
         timerTrigger?.updateRecurrence(recurrenceComponents) { error in
             if let error = error {
-                self.errors.append(error)
+                self.errors.append(error as NSError)
             }
-            dispatch_group_leave(self.saveTriggerGroup)
+            self.saveTriggerGroup.leave()
         }
     }
 }

@@ -12,9 +12,9 @@ extension UIStoryboardSegue {
     
     /// - returns:  The intended `UIViewController` from the segue's destination.
     var intendedDestinationViewController: UIViewController {
-        if let navigationController = self.destinationViewController as? UINavigationController {
+        if let navigationController = self.destination as? UINavigationController {
             return navigationController.topViewController!
         }
-        return self.destinationViewController
+        return self.destination
     }
 }

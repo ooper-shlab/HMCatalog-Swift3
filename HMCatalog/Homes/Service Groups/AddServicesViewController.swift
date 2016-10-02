@@ -32,7 +32,7 @@ class AddServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     // MARK: View Methods
     
     /// Reloads internal data and view.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         selectedServices = []
         reloadTable()
@@ -49,25 +49,25 @@ class AddServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     // MARK: Table View Methods
     
     /// - returns:  The number of displayed accessories.
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return displayedAccessories.count
     }
     
     /// - returns:  The number of displayed services for the provided accessory.
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let accessory = displayedAccessories[section]
         return displayedServicesForAccessory[accessory]!.count
     }
     
     /// - returns:  A configured `ServiceCell`.
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.serviceCell, forIndexPath: indexPath) as! ServiceCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.serviceCell, for: indexPath) as! ServiceCell
         
         let service = serviceAtIndexPath(indexPath)
         
         cell.includeAccessoryText = false
         cell.service = service
-        cell.accessoryType = selectedServices.contains(service)  ? .Checkmark : .None
+        cell.accessoryType = selectedServices.contains(service)  ? .checkmark : .none
 
         return cell
     }
@@ -76,23 +76,23 @@ class AddServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
         When an indexPath is selected, this function either adds or removes the selected service from the
         service group.
     */
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // Get the service associated with this index.
         let service = serviceAtIndexPath(indexPath)
         
         // Call the appropriate add/remove operation with the closure from above.
-        if let index = selectedServices.indexOf(service) {
-            selectedServices.removeAtIndex(index)
+        if let index = selectedServices.index(of: service) {
+            selectedServices.remove(at: index)
         }
         else {
             selectedServices.append(service)
         }
 
-        tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+        tableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
     /// - returns: The name of the displayed accessory at the given section.
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return displayedAccessories[section].name
     }
     
@@ -103,19 +103,19 @@ class AddServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         Calls the provided completion handler once all services have been added.
     */
-    func addSelectedServicesWithCompletionHandler(completion: () -> Void) {
+    func addSelectedServicesWithCompletionHandler(_ completion: @escaping () -> Void) {
         // Create a dispatch group for each of the service additions.
-        let addServicesGroup = dispatch_group_create()
+        let addServicesGroup = DispatchGroup()
         for service in selectedServices {
-            dispatch_group_enter(addServicesGroup)
+            addServicesGroup.enter()
             serviceGroup.addService(service) { error in
                 if let error = error {
                     self.displayError(error)
                 }
-                dispatch_group_leave(addServicesGroup)
+                addServicesGroup.leave()
             }
         }
-        dispatch_group_notify(addServicesGroup, dispatch_get_main_queue(), completion)
+        addServicesGroup.notify(queue: DispatchQueue.main, execute: completion)
     }
     
     /**
@@ -125,10 +125,10 @@ class AddServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - returns:  The `HMService` at the given index path.
     */
-    private func serviceAtIndexPath(indexPath: NSIndexPath) -> HMService {
-        let accessory = displayedAccessories[indexPath.section]
+    private func serviceAtIndexPath(_ indexPath: IndexPath) -> HMService {
+        let accessory = displayedAccessories[(indexPath as NSIndexPath).section]
         let services = displayedServicesForAccessory[accessory]!
-        return services[indexPath.row]
+        return services[(indexPath as NSIndexPath).row]
     }
     
     /**
@@ -137,7 +137,7 @@ class AddServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     */
     @IBAction func dismiss() {
         addSelectedServicesWithCompletionHandler {
-            self.dismissViewControllerAnimated(true, completion: nil)
+            self.dismiss(animated: true, completion: nil)
         }
     }
     
@@ -174,22 +174,22 @@ class AddServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     // MARK: HMHomeDelegate Methods
     
     /// Dismisses the view controller if our service group was removed.
-    func home(home: HMHome, didRemoveServiceGroup group: HMServiceGroup) {
+    func home(_ home: HMHome, didRemoveServiceGroup group: HMServiceGroup) {
         if serviceGroup == group {
-            dismissViewControllerAnimated(true, completion: nil)
+            self.dismiss(animated: true, completion: nil)
         }
     }
     
     /// Reloads the view if an accessory was added to HomeKit.
-    func home(home: HMHome, didAddAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didAddAccessory accessory: HMAccessory) {
         reloadTable()
         accessory.delegate = self
     }
     
     /// Dismisses the view controller if we no longer have accesories.
-    func home(home: HMHome, didRemoveAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didRemoveAccessory accessory: HMAccessory) {
         if home.accessories.isEmpty {
-            navigationController?.dismissViewControllerAnimated(true, completion: nil)
+            navigationController?.dismiss(animated: true, completion: nil)
         }
         
         reloadTable()
@@ -199,11 +199,11 @@ class AddServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     
     // Accessory changes reload the data and view.
 
-    func accessory(accessory: HMAccessory, didUpdateNameForService service: HMService) {
+    func accessory(_ accessory: HMAccessory, didUpdateNameFor service: HMService) {
         reloadTable()
     }
     
-    func accessoryDidUpdateServices(accessory: HMAccessory) {
+    func accessoryDidUpdateServices(_ accessory: HMAccessory) {
         reloadTable()
     }
 }

@@ -19,7 +19,7 @@ protocol MapViewControllerDelegate {
         Notifies the delegate that the `MapViewController`'s
         region has been updated.
     */
-    func mapViewDidUpdateRegion(region: CLCircularRegion)
+    func mapViewDidUpdateRegion(_ region: CLCircularRegion)
 }
 
 /**
@@ -59,12 +59,12 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
         didSet {
             // Remove the old overlay (if exists)
             if let oldOverlay = oldValue {
-                mapView.removeOverlay(oldOverlay)
+                mapView.remove(oldOverlay)
             }
             
             // Add the new overlay (if exists)
             if let overlay = circleOverlay {
-                mapView.addOverlay(overlay)
+                mapView.add(overlay)
             }
         }
     }
@@ -79,12 +79,12 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
         searchBar.delegate = self
         mapView.delegate = self
         mapView.showsUserLocation = true
-        mapView.pitchEnabled = false
+        mapView.isPitchEnabled = false
         locationManager.delegate = self
     }
     
     /// Loads the user's location and zooms the target region.
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         locationManager.requestWhenInUseAuthorization()
         locationManager.requestLocation()
@@ -95,7 +95,7 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
     }
     
     /// Updates the overlay when the orientation changes.
-    override func didRotateFromInterfaceOrientation(fromInterfaceOrientation: UIInterfaceOrientation) {
+    override func didRotate(from fromInterfaceOrientation: UIInterfaceOrientation) {
         overlayView.setNeedsDisplay()
     }
     
@@ -106,7 +106,7 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
         and zoom, then notifies the delegate that the region has changed.
         This will dismiss the view.
     */
-    @IBAction func didTapSaveButton(sender: UIBarButtonItem) {
+    @IBAction func didTapSaveButton(_ sender: UIBarButtonItem) {
         let circleDegreeDelta: CLLocationDegrees
         let pointOnCircle: CLLocation
         
@@ -121,17 +121,17 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
         
         
         let mapCenterLocation = CLLocation(latitude: mapView.region.center.latitude, longitude: mapView.region.center.longitude)
-        let distance = pointOnCircle.distanceFromLocation(mapCenterLocation)
+        let distance = pointOnCircle.distance(from: mapCenterLocation)
         let genericRegion = CLCircularRegion(center: mapView.region.center, radius: distance, identifier: Identifiers.circularRegion)
         
-        circleOverlay = MKCircle(centerCoordinate: genericRegion.center, radius: genericRegion.radius)
+        circleOverlay = MKCircle(center: genericRegion.center, radius: genericRegion.radius)
         delegate?.mapViewDidUpdateRegion(genericRegion)
-        dismissViewControllerAnimated(true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
     
     /// Dismisses the view without notifying the delegate.
-    @IBAction func didTapCancelButton(sender: UIBarButtonItem) {
-        dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func didTapCancelButton(_ sender: UIBarButtonItem) {
+        dismiss(animated: true, completion: nil)
     }
     
     // MARK: Search Bar Methods
@@ -140,7 +140,7 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
         Dismisses the keyboard and runs a new search from the
         search bar.
     */
-    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
         mapView.removeAnnotations(mapView.annotations)
         performSearch()
@@ -149,7 +149,7 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
     // MARK: Location Manager Methods
     
     /// Zooms to the user's location if the region is not set.
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let lastLocation = locations.last else { return }
         if targetRegion != nil {
             // Do not zoom to the user's location if there is already a target region.
@@ -163,7 +163,7 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
         The method is required.
         Simply logs the error.
     */
-    func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("System: Location Manager Error: \(error)")
     }
     
@@ -171,7 +171,7 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
         When the user updates the authorization status, we want to
         zoom to their current location by asking for it.
     */
-    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         locationManager.requestLocation()
     }
     
@@ -182,8 +182,8 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
         
         - parameter region: The new `CLCircularRegion`.
     */
-    private func annotateAndZoomToRegion(region: CLCircularRegion) {
-        circleOverlay = MKCircle(centerCoordinate: region.center, radius: region.radius)
+    private func annotateAndZoomToRegion(_ region: CLCircularRegion) {
+        circleOverlay = MKCircle(center: region.center, radius: region.radius)
         let multiplier = MapViewController.MapRegionFraction
         let mapRegion = MKCoordinateRegionMakeWithDistance(region.center, region.radius*multiplier, region.radius*multiplier)
         mapView.setRegion(mapRegion, animated: false)
@@ -204,7 +204,7 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
         
         var matchingItems = [MKMapItem]()
         
-        search.startWithCompletionHandler { response, error in
+        search.start { response, error in
             let mapItems: [MKMapItem] = response?.mapItems ?? []
             for item in mapItems {
                 matchingItems.append(item)
@@ -217,10 +217,10 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
     }
     
     /// - returns:  An `MKOverlayRenderer` with our custom stroke and fill.
-    func mapView(mapView: MKMapView, rendererForOverlay overlay: MKOverlay) -> MKOverlayRenderer {
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         let circleRenderer = MKCircleRenderer(overlay: overlay)
-        circleRenderer.fillColor = UIColor.blueColor().colorWithAlphaComponent(0.2)
-        circleRenderer.strokeColor = UIColor.blackColor()
+        circleRenderer.fillColor = UIColor.blue.withAlphaComponent(0.2)
+        circleRenderer.strokeColor = UIColor.black
         circleRenderer.lineWidth = 2.0
         return circleRenderer
     }

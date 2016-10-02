@@ -20,25 +20,25 @@ extension UIAlertController {
      
         - returns:   A `UIAlertController` instance with a UITextField, cancel button, and add button.
     */
-    convenience init(attributeType: String, completionHandler: (name: String) -> Void, placeholder: String? = nil, shortType: String? = nil) {
+    convenience init(attributeType: String, completionHandler: @escaping (_ name: String) -> Void, placeholder: String? = nil, shortType: String? = nil) {
         let title = NSLocalizedString("New", comment: "New") + " \(attributeType)"
         let message = NSLocalizedString("Enter a name.", comment: "Enter a name.")
-        self.init(title: title, message: message, preferredStyle: .Alert)
-        self.addTextFieldWithConfigurationHandler { textField in
+        self.init(title: title, message: message, preferredStyle: .alert)
+        self.addTextField { textField in
             textField.placeholder = placeholder ?? attributeType
-            textField.autocapitalizationType = .Words
+            textField.autocapitalizationType = .words
         }
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: "Cancel"), style: .Cancel) { action in
-            self.dismissViewControllerAnimated(true, completion: nil)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: "Cancel"), style: .cancel) { action in
+            self.dismiss(animated: true, completion: nil)
         }
         let add = NSLocalizedString("Add", comment: "Add")
         let actionTitle = "\(add) \(shortType ?? attributeType)"
-        let addNewObject = UIAlertAction(title: actionTitle, style: .Default) { action in
+        let addNewObject = UIAlertAction(title: actionTitle, style: .default) { action in
             if let name = self.textFields!.first!.text {
-                let trimmedName = name.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-                completionHandler(name: trimmedName)
+                let trimmedName = name.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                completionHandler(trimmedName)
             }
-            self.dismissViewControllerAnimated(true, completion: nil)
+            self.dismiss(animated: true, completion: nil)
         }
         self.addAction(cancelAction)
         self.addAction(addNewObject)
@@ -52,9 +52,9 @@ extension UIAlertController {
         - returns:  A `UIAlertController` with an 'Okay' button.
     */
     convenience init(title: String, body: String) {
-        self.init(title: title, message: body, preferredStyle: .Alert)
-        let okayAction = UIAlertAction(title: NSLocalizedString("Okay", comment: "Okay"), style: .Default) { action in
-            self.dismissViewControllerAnimated(true, completion: nil)
+        self.init(title: title, message: body, preferredStyle: .alert)
+        let okayAction = UIAlertAction(title: NSLocalizedString("Okay", comment: "Okay"), style: .default) { action in
+            self.dismiss(animated: true, completion: nil)
         }
         self.addAction(okayAction)
     }

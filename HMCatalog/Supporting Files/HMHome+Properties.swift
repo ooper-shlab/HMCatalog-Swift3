@@ -11,14 +11,14 @@ import HomeKit
 extension HMHome {
     /// All the services within all the accessories within the home.
     var allServices: [HMService] {
-        return accessories.reduce([], combine: { (accumulator, accessory) -> [HMService] in
+        return accessories.reduce([], { (accumulator, accessory) -> [HMService] in
             return accumulator + accessory.services.filter { return !accumulator.contains($0) }
         })
     }
     
     /// All the characteristics within all of the services within the home.
     var allCharacteristics: [HMCharacteristic] {
-        return allServices.reduce([], combine: { (accumulator, service) -> [HMCharacteristic] in
+        return allServices.reduce([], { (accumulator, service) -> [HMCharacteristic] in
             return accumulator + service.characteristics.filter { return !accumulator.contains($0) }
         })
     }
@@ -41,8 +41,8 @@ extension HMHome {
         }
         
         for (serviceType, services) in serviceDictionary {
-            serviceDictionary[serviceType] = services.sort {
-                return $0.accessory!.name.localizedCompare($1.accessory!.name) == .OrderedAscending
+            serviceDictionary[serviceType] = services.sorted {
+                return $0.accessory!.name.localizedCompare($1.accessory!.name) == .orderedAscending
             }
         }
         return serviceDictionary
@@ -56,7 +56,7 @@ extension HMHome {
    
     /// - returns:  `true` if the current user is the admin of this home; `false` otherwise.
     var isAdmin: Bool {
-        return self.homeAccessControlForUser(currentUser).administrator
+        return self.homeAccessControl(for: currentUser).isAdministrator
     }
     
     /// - returns:  All accessories which are 'control accessories'.
@@ -78,7 +78,7 @@ extension HMHome {
         - returns:  The accessory within the receiver that matches the given UUID,
                     or nil if there is no accessory with that UUID.
     */
-    func accessoryWithIdentifier(identifier: NSUUID) -> HMAccessory? {
+    func accessoryWithIdentifier(_ identifier: UUID) -> HMAccessory? {
         for accessory in self.accessories {
             if accessory.uniqueIdentifier == identifier {
                 return accessory
@@ -93,7 +93,7 @@ extension HMHome {
         - returns:  An array of `HMAccessory` instances corresponding to
                     the UUIDs passed in.
     */
-    func accessoriesWithIdentifiers(identifiers: [NSUUID]) -> [HMAccessory] {
+    func accessoriesWithIdentifiers(_ identifiers: [UUID]) -> [HMAccessory] {
         return self.accessories.filter { accessory in
             identifiers.contains(accessory.uniqueIdentifier) 
         }
@@ -107,12 +107,12 @@ extension HMHome {
         
         - returns:  The accessory bridging the bridged accessory.
     */
-    func bridgeForAccessory(accessory: HMAccessory) -> HMAccessory? {
-        if !accessory.bridged {
+    func bridgeForAccessory(_ accessory: HMAccessory) -> HMAccessory? {
+        if !accessory.isBridged {
             return nil
         }
         for bridge in self.accessories {
-            if let identifiers = bridge.uniqueIdentifiersForBridgedAccessories where identifiers.contains(accessory.uniqueIdentifier)  {
+            if let identifiers = bridge.uniqueIdentifiersForBridgedAccessories , identifiers.contains(accessory.uniqueIdentifier)  {
                 return bridge
             }
         }
@@ -125,7 +125,7 @@ extension HMHome {
         - returns:  The name of the room, appending "Default Room" if the room
                     is the home's `roomForEntireHome`
     */
-    func nameForRoom(room: HMRoom) -> String {
+    func nameForRoom(_ room: HMRoom) -> String {
         if room == self.roomForEntireHome() {
             let defaultRoom = NSLocalizedString("Default Room", comment: "Default Room")
             return room.name + " (\(defaultRoom))"
@@ -140,7 +140,7 @@ extension HMHome {
         - returns:  A list of rooms that exist in the home and have not
                     yet been added to this zone.
     */
-    func roomsNotAlreadyInZone(zone: HMZone, includingRooms rooms: [HMRoom]? = nil) -> [HMRoom] {
+    func roomsNotAlreadyInZone(_ zone: HMZone, includingRooms rooms: [HMRoom]? = nil) -> [HMRoom] {
         var filteredRooms = self.rooms.filter { room in
             return !zone.rooms.contains(room) 
         }
@@ -157,7 +157,7 @@ extension HMHome {
         
         - returns:  A list of services that exist in the home and have not yet been added to this service group.
     */
-    func servicesNotAlreadyInServiceGroup(serviceGroup: HMServiceGroup, includingServices services: [HMService]? = nil) -> [HMService] {
+    func servicesNotAlreadyInServiceGroup(_ serviceGroup: HMServiceGroup, includingServices services: [HMService]? = nil) -> [HMService] {
         var filteredServices = self.allServices.filter { service in
             /*
                 Exclude services that are already in the service group

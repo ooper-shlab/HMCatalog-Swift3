@@ -11,7 +11,7 @@ import HomeKit
 
 /// Represents modes for a `CharacteristicTriggerCreator`.
 enum CharacteristicTriggerCreatorMode: Int {
-    case Event, Condition
+    case event, condition
 }
 
 /**
@@ -32,17 +32,17 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
         Setting the `mode` determines how this trigger creator will handle 
         cell delegate callbacks.
     */
-    var mode: CharacteristicTriggerCreatorMode = .Event
+    var mode: CharacteristicTriggerCreatorMode = .event
     
     /**
         Contains the new pending mapping of `HMCharacteristic`s to their trigger (`NSCopying`) values.
         When `saveTriggerWithName(name:completion:)` is called, all of these mappings will be converted
         into `HMCharacteristicEvent`s and added to the `HMEventTrigger`.
     */
-    private let targetValueMap = NSMapTable.strongToStrongObjectsMapTable()
+    private let targetValueMap = NSMapTable<HMCharacteristic, CellValueType>.strongToStrongObjects()
     
     /// `HMCharacteristicEvent`s that should be removed if `saveTriggerWithName(name:completion:)` is called.
-    private var removalCharacteristicEvents = [HMCharacteristicEvent]()
+    private var removalCharacteristicEvents = [HMCharacteristicEvent<NSCopying>]()
     
     // MARK: Trigger Creator Methods
     
@@ -53,12 +53,12 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
         removePendingEventsFromTrigger()
         for (characteristic, triggerValue) in pairsFromMapTable(targetValueMap) {
             let newEvent = HMCharacteristicEvent(characteristic: characteristic, triggerValue: triggerValue)
-            dispatch_group_enter(self.saveTriggerGroup)
+            self.saveTriggerGroup.enter()
             eventTrigger.addEvent(newEvent) { error in
                 if let error = error {
                     self.errors.append(error)
                 }
-                dispatch_group_leave(self.saveTriggerGroup)
+                self.saveTriggerGroup.leave()
             }
         }
         savePredicate()
@@ -86,13 +86,13 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
         
         - parameter event: `HMCharacteristicEvent` to be removed.
     */
-    func removeEvent(event: HMCharacteristicEvent) {
-        if targetValueMap.objectForKey(event.characteristic) != nil {
+    func removeEvent(_ event: HMCharacteristicEvent<CellValueType>) {
+        if targetValueMap.object(forKey: event.characteristic) != nil {
             // Remove the characteristic from the target value map.
-            targetValueMap.removeObjectForKey(event.characteristic)
+            targetValueMap.removeObject(forKey: event.characteristic)
         }
         
-        if let characteristicEvents = eventTrigger?.characteristicEvents where characteristicEvents.contains(event)  {
+        if let characteristicEvents = eventTrigger?.characteristicEvents , characteristicEvents.contains(event)  {
             // If the given event is in the event array, queue it for removal.
             removalCharacteristicEvents.append(event)
         }
@@ -104,8 +104,9 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
         Any characteristic events in the map table that have not yet been
         added to the trigger.
     */
-    var pendingCharacteristicEvents: [HMCharacteristicEvent] {
-        return pairsFromMapTable(targetValueMap).map { (characteristic, triggerValue) -> HMCharacteristicEvent in
+    var pendingCharacteristicEvents: [HMCharacteristicEvent<CellValueType>] {
+        let pairs = pairsFromMapTable(targetValueMap)
+        return pairs.map { (characteristic, triggerValue) -> HMCharacteristicEvent<CellValueType> in
             return HMCharacteristicEvent(characteristic: characteristic, triggerValue: triggerValue)
         }
     }
@@ -120,13 +121,13 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
         guard let eventTrigger = eventTrigger else { return }
         for event in eventTrigger.characteristicEvents {
             // Find events who's characteristic is in our map table.
-            if let triggerValue = targetValueMap.objectForKey(event.characteristic) as? NSCopying {
-                dispatch_group_enter(self.saveTriggerGroup)
+            if let triggerValue = targetValueMap.object(forKey: event.characteristic) {
+                self.saveTriggerGroup.enter()
                 event.updateTriggerValue(triggerValue) { error in
                     if let error = error {
                         self.errors.append(error)
                     }
-                    dispatch_group_leave(self.saveTriggerGroup)
+                    self.saveTriggerGroup.leave()
                 }
             }
         }
@@ -139,12 +140,12 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
     private func removePendingEventsFromTrigger() {
         guard let eventTrigger = eventTrigger else { return }
         for event in removalCharacteristicEvents {
-            dispatch_group_enter(saveTriggerGroup)
+            saveTriggerGroup.enter()
             eventTrigger.removeEvent(event) { error in
                 if let error = error {
                     self.errors.append(error)
                 }
-                dispatch_group_leave(self.saveTriggerGroup)
+                self.saveTriggerGroup.leave()
             }
         }
         removalCharacteristicEvents.removeAll()
@@ -168,15 +169,15 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
         - parameter value: The value of the characteristic.
         - parameter characteristic: The `HMCharacteristic` that has been updated.
     */
-    private func updateEventValue(value: AnyObject, forCharacteristic characteristic: HMCharacteristic) {
-        for (index, event) in removalCharacteristicEvents.enumerate() {
+    private func updateEventValue(_ value: NSCopying, forCharacteristic characteristic: HMCharacteristic) {
+        for (index, event) in removalCharacteristicEvents.enumerated() {
             if event.characteristic == characteristic {
                 /*
                     We have this event pending for deletion,
                     but we are going to want to update it.
                     remove it from the removal array.
                 */
-                removalCharacteristicEvents.removeAtIndex(index)
+                removalCharacteristicEvents.remove(at: index)
                 break
             }
         }
@@ -188,7 +189,7 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
         filtering out the events pending removal from the original trigger events and
         then adding new pending events.
     */
-    var events: [HMCharacteristicEvent] {
+    var events: [HMCharacteristicEvent<CellValueType>] {
         let characteristicEvents = eventTrigger?.characteristicEvents ?? []
         
         let originalEvents = characteristicEvents.filter {
@@ -197,10 +198,10 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
         
         let allEvents = originalEvents + pendingCharacteristicEvents
         
-        return allEvents.sort { (event1: HMCharacteristicEvent, event2: HMCharacteristicEvent) in
+        return allEvents.sorted { (event1: HMCharacteristicEvent, event2: HMCharacteristicEvent) in
             let type1 = event1.characteristic.localizedCharacteristicType
             let type2 = event2.characteristic.localizedCharacteristicType
-            return type1.localizedCompare(type2) == .OrderedAscending
+            return type1.localizedCompare(type2) == .orderedAscending
         }
     }
     
@@ -210,9 +211,9 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
         If the mode is event, update the event value.
         Otherwise, default to super implementation
     */
-    override func characteristicCell(cell: CharacteristicCell, didUpdateValue value: AnyObject, forCharacteristic characteristic: HMCharacteristic, immediate: Bool) {
+    override func characteristicCell(_ cell: CharacteristicCell, didUpdateValue value: CellValueType, forCharacteristic characteristic: HMCharacteristic, immediate: Bool) {
         switch mode {
-            case .Event:
+            case .event:
                 updateEventValue(value, forCharacteristic: characteristic)
             
             default:
@@ -225,28 +226,28 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
         condition map (based on the current mode). Then calls read value.
         When the value comes back, we check the selected map for the value
     */
-    override func characteristicCell(cell: CharacteristicCell, readInitialValueForCharacteristic characteristic: HMCharacteristic, completion: (AnyObject?, NSError?) -> Void) {
-        if mode == .Condition {
+    override func characteristicCell(_ cell: CharacteristicCell, readInitialValueForCharacteristic characteristic: HMCharacteristic, completion: @escaping (CellValueType?, Error?) -> Void) {
+        if mode == .condition {
             // This is a condition, fall back to the `EventTriggerCreator` read.
             super.characteristicCell(cell, readInitialValueForCharacteristic: characteristic, completion: completion)
             return
         }
         
-        if let value = targetValueMap.objectForKey(characteristic) {
+        if let value = targetValueMap.object(forKey: characteristic) {
             completion(value, nil)
             return
         }
         
-        characteristic.readValueWithCompletionHandler { error in
+        characteristic.readValue { error in
             /*
                 The user may have updated the cell value while the
                 read was happening. We check the map one more time.
             */
-            if let value = self.targetValueMap.objectForKey(characteristic) {
+            if let value = self.targetValueMap.object(forKey: characteristic) {
                 completion(value, nil)
             }
             else {
-                completion(characteristic.value, error)
+                completion(characteristic.value as? CellValueType, error as NSError?)
             }
         }
     }

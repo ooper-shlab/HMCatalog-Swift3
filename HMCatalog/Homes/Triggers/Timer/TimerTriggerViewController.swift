@@ -50,14 +50,14 @@ class TimerTriggerViewController: TriggerViewController {
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 44.0
         triggerCreator = TimerTriggerCreator(trigger: trigger, home: home)
-        datePicker.date = timerTriggerCreator.fireDate
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Identifiers.recurrenceCell)
+        datePicker.date = timerTriggerCreator.fireDate as Date
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: Identifiers.recurrenceCell)
     }
     
     // MARK: IBAction Methods
     
     /// Reset our saved fire date to the date in the picker.
-    @IBAction func didChangeDate(picker: UIDatePicker) {
+    @IBAction func didChangeDate(_ picker: UIDatePicker) {
         timerTriggerCreator.rawFireDate = picker.date
     }
     
@@ -67,9 +67,9 @@ class TimerTriggerViewController: TriggerViewController {
         - returns:  The number of rows in the Recurrence section;
                     defaults to the super implementation for other sections
     */
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch sectionForIndex(section) {
-            case .Recurrence?:
+            case .recurrence?:
                 return TimerTriggerViewController.RecurrenceTitles.count
                 
             case nil:
@@ -84,31 +84,31 @@ class TimerTriggerViewController: TriggerViewController {
         Generates a recurrence cell.
         Defaults to the super implementation for other sections
     */
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        switch sectionForIndex(indexPath.section) {
-            case .Recurrence?:
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .recurrence?:
                 return self.tableView(tableView, recurrenceCellForRowAtIndexPath: indexPath)
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
 
             default:
-                return super.tableView(tableView, cellForRowAtIndexPath: indexPath)
+                return super.tableView(tableView, cellForRowAt: indexPath)
         }
     }
     
     /// Creates a cell that represents a recurrence type.
-    func tableView(tableView: UITableView, recurrenceCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.recurrenceCell, forIndexPath: indexPath)
-        let title = TimerTriggerViewController.RecurrenceTitles[indexPath.row]
+    func tableView(_ tableView: UITableView, recurrenceCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.recurrenceCell, for: indexPath)
+        let title = TimerTriggerViewController.RecurrenceTitles[(indexPath as NSIndexPath).row]
         cell.textLabel?.text = title
         
         // The current preferred recurrence style should have a check mark.
-        if indexPath.row == timerTriggerCreator.selectedRecurrenceIndex {
-            cell.accessoryType = .Checkmark
+        if (indexPath as NSIndexPath).row == timerTriggerCreator.selectedRecurrenceIndex {
+            cell.accessoryType = .checkmark
         }
         else {
-            cell.accessoryType = .None
+            cell.accessoryType = .none
         }
         return cell
     }
@@ -117,16 +117,16 @@ class TimerTriggerViewController: TriggerViewController {
         Tell the tableView to automatically size the custom rows, while using the superclass's
         static sizing for the static cells.
     */
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        switch sectionForIndex(indexPath.section) {
-            case .Recurrence?:
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .recurrence?:
                 return UITableViewAutomaticDimension
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
                 
             default:
-                return super.tableView(tableView, heightForRowAtIndexPath: indexPath)
+                return super.tableView(tableView, heightForRowAt: indexPath)
         }
     }
     
@@ -134,17 +134,17 @@ class TimerTriggerViewController: TriggerViewController {
         Handles recurrence cell selection.
         Defaults to the super implementation for other sections
     */
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        switch sectionForIndex(indexPath.section) {
-            case .Recurrence?:
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .recurrence?:
                 self.tableView(tableView, didSelectRecurrenceComponentAtIndexPath: indexPath)
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
                 
             default:
-                super.tableView(tableView, didSelectRowAtIndexPath: indexPath)
+                super.tableView(tableView, didSelectRowAt: indexPath)
         }
     }
     
@@ -155,14 +155,14 @@ class TimerTriggerViewController: TriggerViewController {
         recurrence component, reset the current selected component to `NSNotFound`
         and deselect that row.
     */
-    func tableView(tableView: UITableView, didSelectRecurrenceComponentAtIndexPath indexPath: NSIndexPath) {
-        if indexPath.row == timerTriggerCreator.selectedRecurrenceIndex {
+    func tableView(_ tableView: UITableView, didSelectRecurrenceComponentAtIndexPath indexPath: IndexPath) {
+        if (indexPath as NSIndexPath).row == timerTriggerCreator.selectedRecurrenceIndex {
             timerTriggerCreator.selectedRecurrenceIndex = NSNotFound
         }
         else {
-            timerTriggerCreator.selectedRecurrenceIndex = indexPath.row
+            timerTriggerCreator.selectedRecurrenceIndex = (indexPath as NSIndexPath).row
         }
-        tableView.reloadSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Automatic)
+        tableView.reloadSections(IndexSet(integer: (indexPath as NSIndexPath).section), with: .automatic)
     }
     
     /**
@@ -170,22 +170,22 @@ class TimerTriggerViewController: TriggerViewController {
         
         - returns:  The `TriggerTableViewSection` for the given index.
     */
-    override func sectionForIndex(index: Int) -> TriggerTableViewSection? {
+    override func sectionForIndex(_ index: Int) -> TriggerTableViewSection? {
         switch index {
             case 0:
-                return .Name
+                return .name
             
             case 1:
-                return .Enabled
+                return .enabled
             
             case 2:
-                return .DateAndTime
+                return .dateAndTime
             
             case 3:
-                return .Recurrence
+                return .recurrence
             
             case 4:
-                return .ActionSets
+                return .actionSets
             
             default:
                 return nil

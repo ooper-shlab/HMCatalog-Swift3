@@ -10,24 +10,25 @@ import HomeKit
 
 /// A `CharacteristicCellDelegate` that builds an `HMActionSet` when it receives delegate callbacks.
 class ActionSetCreator: CharacteristicCellDelegate {
+
     // MARK: Properties
     
     var actionSet: HMActionSet?
     var home: HMHome
-    
-    var saveError: NSError?
+
+    var saveError: Error?
     
     /// The structure we're going to use to hold the target values.
-    let targetValueMap = NSMapTable.strongToStrongObjectsMapTable()
+    let targetValueMap = NSMapTable<HMCharacteristic, CellValueType>.strongToStrongObjects()
     
     /// A dispatch group to wait for all of the individual components of the saving process.
-    let saveActionSetGroup = dispatch_group_create()
+    let saveActionSetGroup = DispatchGroup()
     
     required init(actionSet: HMActionSet?, home: HMHome) {
         self.actionSet = actionSet
         self.home = home
     }
-    
+
     /**
         If there is an action set, saves the action set and then updates its name.
         Otherwise creates a new action set and adds all actions to it.
@@ -35,7 +36,7 @@ class ActionSetCreator: CharacteristicCellDelegate {
         - parameter name:              The new name for the action set.
         - parameter completionHandler: A closure to call once the action set has been completely saved.
     */
-    func saveActionSetWithName(name: NSString, completionHandler: (error: NSError?) -> Void) {
+    func saveActionSetWithName(_ name: NSString, completionHandler: @escaping (_ error: Error?) -> Void) {
         if let actionSet = actionSet {
             saveActionSet(actionSet)
             updateNameIfNecessary(name)
@@ -43,27 +44,27 @@ class ActionSetCreator: CharacteristicCellDelegate {
         else {
             createActionSetWithName(name)
         }
-        dispatch_group_notify(saveActionSetGroup, dispatch_get_main_queue()) {
-            completionHandler(error: self.saveError)
+        saveActionSetGroup.notify(queue: DispatchQueue.main) {
+            completionHandler(self.saveError)
             self.saveError = nil
         }
     }
-    
+
     /**
         Adds all of the actions that have been requested to the Action Set, then runs a completion block.
         
         - parameter completion: A closure to be called when all of the actions have been added.
     */
-    func saveActionSet(actionSet: HMActionSet) {
+    func saveActionSet(_ actionSet: HMActionSet) {
         let actions = actionsFromMapTable(targetValueMap)
         for action in actions {
-            dispatch_group_enter(saveActionSetGroup)
+            saveActionSetGroup.enter()
             addAction(action, toActionSet: actionSet) { error in
                 if let error = error {
                     print("HomeKit: Error adding action: \(error.localizedDescription)")
                     self.saveError = error
                 }
-                dispatch_group_leave(self.saveActionSetGroup)
+                self.saveActionSetGroup.leave()
             }
         }
     }
@@ -73,17 +74,17 @@ class ActionSetCreator: CharacteristicCellDelegate {
         
         - parameter name: The new name for the action set.
     */
-    func updateNameIfNecessary(name: NSString) {
-        if actionSet?.name == name {
+    func updateNameIfNecessary(_ name: NSString) {
+        if (actionSet?.name)! == name as String {
             return
         }
-        dispatch_group_enter(saveActionSetGroup)
+        saveActionSetGroup.enter()
         actionSet?.updateName(name as String) { error in
             if let error = error {
                 print("HomeKit: Error updating name: \(error.localizedDescription)")
-                self.saveError = error
+                self.saveError = error as NSError?
             }
-            dispatch_group_leave(self.saveActionSetGroup)
+            self.saveActionSetGroup.leave()
         }
     }
     
@@ -92,18 +93,18 @@ class ActionSetCreator: CharacteristicCellDelegate {
         
         - parameter name: The name for the new action set.
     */
-    func createActionSetWithName(name: NSString) {
-        dispatch_group_enter(saveActionSetGroup)
-        home.addActionSetWithName(name as String) { actionSet, error in
+    func createActionSetWithName(_ name: NSString) {
+        saveActionSetGroup.enter()
+        home.addActionSet(withName: name as String) { actionSet, error in
             if let error = error {
                 print("HomeKit: Error creating action set: \(error.localizedDescription)")
-                self.saveError = error
+                self.saveError = error as NSError?
             }
             else {
                 // There is no error, so the action set has a value.
                 self.saveActionSet(actionSet!)
             }
-            dispatch_group_leave(self.saveActionSetGroup)
+            self.saveActionSetGroup.leave()
         }
     }
     
@@ -117,7 +118,7 @@ class ActionSetCreator: CharacteristicCellDelegate {
         - parameter actionSet:  The action set to which to add the action.
         - parameter completion: A closure to call when the addition has finished.
     */
-    func addAction(action: HMCharacteristicWriteAction, toActionSet actionSet: HMActionSet, completion: (NSError?) -> Void) {
+    func addAction(_ action: HMCharacteristicWriteAction<NSCopying>, toActionSet actionSet: HMActionSet, completion: @escaping (Error?) -> Void) {
         if let existingAction = existingActionInActionSetMatchingAction(action) {
             existingAction.updateTargetValue(action.targetValue, completionHandler: completion)
         }
@@ -135,9 +136,9 @@ class ActionSetCreator: CharacteristicCellDelegate {
         - returns: The existing action that matches the characteristic or nil if
                    there is no existing action.
     */
-    func existingActionInActionSetMatchingAction(action: HMCharacteristicWriteAction) -> HMCharacteristicWriteAction? {
+    func existingActionInActionSetMatchingAction(_ action: HMCharacteristicWriteAction<CellValueType>) -> HMCharacteristicWriteAction<CellValueType>? {
         if let actionSet = actionSet {
-            for existingAction in Array(actionSet.actions) as! [HMCharacteristicWriteAction] {
+            for case let existingAction as HMCharacteristicWriteAction<CellValueType> in actionSet.actions {
                 if action.characteristic == existingAction.characteristic {
                     return existingAction
                 }
@@ -154,10 +155,11 @@ class ActionSetCreator: CharacteristicCellDelegate {
         
         - returns:  An array of HMCharacteristicWriteActions.
     */
-    func actionsFromMapTable(table: NSMapTable) -> [HMCharacteristicWriteAction] {
-        return targetValueMap.keyEnumerator().allObjects.map { characteristic in
-            let targetValue =  targetValueMap.objectForKey(characteristic) as! NSCopying
-            return HMCharacteristicWriteAction(characteristic: characteristic as! HMCharacteristic, targetValue: targetValue)
+    func actionsFromMapTable(_ table: NSMapTable<HMCharacteristic, CellValueType>) -> [HMCharacteristicWriteAction<CellValueType>] {
+        return targetValueMap.keyEnumerator().allObjects.map { key in
+            let characteristic = key as! HMCharacteristic
+            let targetValue =  targetValueMap.object(forKey: characteristic)!
+            return HMCharacteristicWriteAction(characteristic: characteristic, targetValue: targetValue)
         }
     }
     
@@ -175,19 +177,19 @@ class ActionSetCreator: CharacteristicCellDelegate {
     */
     var allCharacteristics: [HMCharacteristic] {
         var characteristics = Set<HMCharacteristic>()
-
-        if let actionSet = actionSet, actions = Array(actionSet.actions) as? [HMCharacteristicWriteAction] {
-            let actionSetCharacteristics = actions.map { action -> HMCharacteristic in
-                return action.characteristic
+        
+        if let actions = actionSet?.actions {
+            let actionSetCharacteristics = actions.flatMap { action in
+                return (action as? HMCharacteristicWriteAction<CellValueType>)?.characteristic
             }
-            characteristics.unionInPlace(actionSetCharacteristics)
+            characteristics.formUnion(actionSetCharacteristics)
         }
         
-        characteristics.unionInPlace(targetValueMap.keyEnumerator().allObjects as! [HMCharacteristic])
+        characteristics.formUnion(targetValueMap.keyEnumerator().allObjects as! [HMCharacteristic])
 
         return Array(characteristics)
     }
-    
+
     /**
         Searches through the target value map and existing `HMCharacteristicWriteActions`
         to find the target value for the characteristic in question.
@@ -196,22 +198,21 @@ class ActionSetCreator: CharacteristicCellDelegate {
         
         - returns:  The target value for this characteristic, or nil if there is no target.
     */
-    func targetValueForCharacteristic(characteristic: HMCharacteristic) -> AnyObject? {
-        if let value = targetValueMap.objectForKey(characteristic) {
+    func targetValueForCharacteristic(_ characteristic: HMCharacteristic) -> CellValueType? {
+        if let value = targetValueMap.object(forKey: characteristic) {
             return value
         }
         else if let actions = actionSet?.actions {
-            for action in actions {
-                if let writeAction = action as? HMCharacteristicWriteAction
-                    where writeAction.characteristic == characteristic {
-                        return writeAction.targetValue
+            for case let writeAction as HMCharacteristicWriteAction<CellValueType> in actions {
+                if writeAction.characteristic == characteristic {
+                    return writeAction.targetValue
                 }
             }
         }
 
         return nil
     }
-    
+
     /**
         First removes the characteristic from the `targetValueMap`.
         Then removes any `HMCharacteristicWriteAction`s from the action set
@@ -220,48 +221,48 @@ class ActionSetCreator: CharacteristicCellDelegate {
         - parameter characteristic: The `HMCharacteristic` to remove.
         - parameter completion: The closure to invoke when the characteristic has been removed.
     */
-    func removeTargetValueForCharacteristic(characteristic: HMCharacteristic, completion: () -> Void) {
+    func removeTargetValueForCharacteristic(_ characteristic: HMCharacteristic, completion: @escaping () -> Void) {
         /*
             We need to create a dispatch group here, because in many cases
             there will be one characteristic saved in the Action Set, and one
             in the target value map. We want to run the completion closure only one time,
             to ensure we've removed both.
         */
-        let group = dispatch_group_create()
-        if targetValueMap.objectForKey(characteristic) != nil {
+        let group = DispatchGroup()
+        if targetValueMap.object(forKey: characteristic) != nil {
             // Remove the characteristic from the target value map.
-            dispatch_group_async(group, dispatch_get_main_queue()) {
-                self.targetValueMap.removeObjectForKey(characteristic)
+            DispatchQueue.main.async(group: group) {
+                self.targetValueMap.removeObject(forKey: characteristic)
             }
         }
-        if let actions = actionSet?.actions as? Set<HMCharacteristicWriteAction> {
-            for action in Array(actions) {
+        if let actions = actionSet?.actions {
+            for case let action as HMCharacteristicWriteAction<CellValueType> in actions {
                 if action.characteristic == characteristic {
                     /*
                         Also remove the action, and only relinquish the dispatch group
                         once the action set has finished.
                     */
-                    dispatch_group_enter(group)
+                    group.enter()
                     actionSet?.removeAction(action) { error in
                         if let error = error {
                             print(error.localizedDescription)
                         }
-                        dispatch_group_leave(group)
+                        group.leave()
                     }
                 }
             }
         }
         // Once we're positive both have finished, run the completion closure on the main queue.
-        dispatch_group_notify(group, dispatch_get_main_queue(), completion)
+        group.notify(queue: DispatchQueue.main, execute: completion)
     }
-    
+ 
     // MARK: Characteristic Cell Delegate
-    
+
     /**
         Receives a callback from a `CharacteristicCell` with a value change.
         Adds this value change into the targetValueMap, overwriting other value changes.
     */
-    func characteristicCell(cell: CharacteristicCell, didUpdateValue newValue: AnyObject, forCharacteristic characteristic: HMCharacteristic, immediate: Bool) {
+    func characteristicCell(_ cell: CharacteristicCell, didUpdateValue newValue: CellValueType, forCharacteristic characteristic: HMCharacteristic, immediate: Bool) {
         targetValueMap.setObject(newValue, forKey: characteristic)
     }
     
@@ -272,13 +273,13 @@ class ActionSetCreator: CharacteristicCellDelegate {
         It checks to see if we have an action in this Action Set that matches the characteristic.
         If so, calls the completion closure with the target value.
     */
-    func characteristicCell(cell: CharacteristicCell, readInitialValueForCharacteristic characteristic: HMCharacteristic, completion: (AnyObject?, NSError?) -> Void) {
+    func characteristicCell(_ cell: CharacteristicCell, readInitialValueForCharacteristic characteristic: HMCharacteristic, completion: @escaping (CellValueType?, Error?) -> Void) {
         if let value = targetValueForCharacteristic(characteristic) {
             completion(value, nil)
             return
         }
         
-        characteristic.readValueWithCompletionHandler { error in
+        characteristic.readValue { error in
             /*
                 The user may have updated the cell value while the
                 read was happening. We check the map one more time.
@@ -287,7 +288,7 @@ class ActionSetCreator: CharacteristicCellDelegate {
                 completion(value, nil)
             }
             else {
-                completion(characteristic.value, error)
+                completion(characteristic.value as? CellValueType, error as NSError?)
             }
         }
     }

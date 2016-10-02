@@ -22,9 +22,9 @@ class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let userDefaults = NSUserDefaults.standardUserDefaults()
+        let userDefaults = UserDefaults.standard
         
-        let startingIndex = userDefaults.objectForKey(TabBarController.startingTabIndexKey) as? Int ?? 2
+        let startingIndex = userDefaults.object(forKey: TabBarController.startingTabIndexKey) as? Int ?? 2
 
         selectedIndex = startingIndex
     }
@@ -32,12 +32,12 @@ class TabBarController: UITabBarController {
     // MARK: Tab Bar Methods
     
     /// Save the current selected tab into defaults.
-    override func tabBar(tabBar: UITabBar, didSelectItem item: UITabBarItem) {
-        if let tabBarItems = tabBar.items, index = tabBarItems.indexOf(item) {
+    override func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
+        if let tabBarItems = tabBar.items, let index = tabBarItems.index(of: item) {
 
-            let userDefaults = NSUserDefaults.standardUserDefaults()
+            let userDefaults = UserDefaults.standard
             
-            userDefaults.setObject(index, forKey: TabBarController.startingTabIndexKey)
+            userDefaults.set(index, forKey: TabBarController.startingTabIndexKey)
         }
     }
 }

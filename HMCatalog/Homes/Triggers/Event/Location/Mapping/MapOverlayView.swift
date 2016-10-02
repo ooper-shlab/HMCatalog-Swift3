@@ -18,27 +18,27 @@ class MapOverlayView: UIView {
         Draws a dashed circle in the center of the `rect` with
         a radius 1/4th of the `rect`'s smallest side.
     */
-    override func drawRect(rect: CGRect) {
-        super.drawRect(rect)
+    override func draw(_ rect: CGRect) {
+        super.draw(rect)
         let context = UIGraphicsGetCurrentContext()
         
-        let strokeColor = UIColor.blueColor()
+        let strokeColor = UIColor.blue
         
         let circleDiameter: CGFloat = min(rect.width, rect.height) / 2.0
         let circleRadius = circleDiameter / 2.0
         let cirlceRect = CGRect(x: rect.midX - circleRadius, y: rect.midY - circleRadius, width: circleDiameter, height: circleDiameter)
-        let circlePath = UIBezierPath(ovalInRect: cirlceRect)
+        let circlePath = UIBezierPath(ovalIn: cirlceRect)
         
         strokeColor.setStroke()
         circlePath.lineWidth = 3
-        CGContextSaveGState(context!)
-        CGContextSetLineDash(context!, 0, [6, 6], 2)
+        context!.saveGState()
+        context!.setLineDash(phase: 0, lengths: [6, 6])
         circlePath.stroke()
-        CGContextRestoreGState(context!)
+        context!.restoreGState()
     }
     
     /// - returns:  `false` to accept no touches.
-    override func pointInside(point: CGPoint, withEvent event: UIEvent?) -> Bool {
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
         return false
     }
 }

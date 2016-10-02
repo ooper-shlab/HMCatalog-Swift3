@@ -26,7 +26,7 @@ class SegmentedControlCharacteristicCell: CharacteristicCell {
     override var characteristic: HMCharacteristic! {
         didSet {
             segmentedControl.alpha = enabled ? 1.0 : CharacteristicCell.DisabledAlpha
-            segmentedControl.userInteractionEnabled = enabled
+            segmentedControl.isUserInteractionEnabled = enabled
 
             if let values = characteristic.allPossibleValues as? [Int] {
                 possibleValues = values
@@ -42,9 +42,9 @@ class SegmentedControlCharacteristicCell: CharacteristicCell {
         didSet {
             segmentedControl.removeAllSegments()
             for index in 0..<possibleValues.count {
-                let value: AnyObject = possibleValues[index]
+                let value: AnyObject = possibleValues[index] as AnyObject
                 let title = characteristic.localizedDescriptionForValue(value)
-                segmentedControl.insertSegmentWithTitle(title, atIndex: index, animated: false)
+                segmentedControl.insertSegment(withTitle: title, at: index, animated: false)
             }
 
             resetSelectedIndex()
@@ -57,9 +57,9 @@ class SegmentedControlCharacteristicCell: CharacteristicCell {
     
         - parameter sender: The segmented control that changed.
     */
-    func segmentedControlDidChange(sender: UISegmentedControl) {
+    func segmentedControlDidChange(_ sender: UISegmentedControl) {
         let value = possibleValues[sender.selectedSegmentIndex]
-        setValue(value, notify: true)
+        setValue(value as NSNumber?, notify: true)
     }
     
     /**
@@ -69,7 +69,7 @@ class SegmentedControlCharacteristicCell: CharacteristicCell {
         - parameter newValue: The new value.
         - parameter notify:   Whether or not to notify the delegate.
     */
-    override func setValue(newValue: AnyObject?, notify: Bool) {
+    override func setValue(_ newValue: CellValueType?, notify: Bool) {
         super.setValue(newValue, notify: notify)
         if !notify {
             resetSelectedIndex()
@@ -78,7 +78,7 @@ class SegmentedControlCharacteristicCell: CharacteristicCell {
     
     /// Sets the segmented control based on the set value.
     func resetSelectedIndex() {
-        if let intValue = value as? Int, index = possibleValues.indexOf(intValue) {
+        if let intValue = value as? Int, let index = possibleValues.index(of: intValue) {
             segmentedControl.selectedSegmentIndex = index
         }
     }

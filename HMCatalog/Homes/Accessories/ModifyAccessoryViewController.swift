@@ -11,14 +11,14 @@ import HomeKit
 
 /// Represents the sections in the `ModifyAccessoryViewController`.
 enum AddAccessoryTableViewSection: Int {
-    case Name, Rooms, Identify
+    case name, rooms, identify
     
     static let count = 3
 }
 
 /// Contains a method for notifying the delegate that the accessory was saved.
 protocol ModifyAccessoryDelegate {
-    func accessoryViewController(accessoryViewController: ModifyAccessoryViewController, didSaveAccessory accessory: HMAccessory)
+    func accessoryViewController(_ accessoryViewController: ModifyAccessoryViewController, didSaveAccessory accessory: HMAccessory)
 }
 
 /// A view controller that allows for renaming, reassigning, and identifying accessories before and after they've been added to a home.
@@ -34,13 +34,13 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
     // Update this if the acessory failed in any way.
     private var didEncounterError = false
     
-    private var selectedIndexPath: NSIndexPath?
+    private var selectedIndexPath: IndexPath?
     private var selectedRoom: HMRoom!
     
     @IBOutlet weak var nameField: UITextField!
-    private lazy var activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
+    private lazy var activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
     
-    private let saveAccessoryGroup = dispatch_group_create()
+    private let saveAccessoryGroup = DispatchGroup()
     
     private var editingExistingAccessory = false
     
@@ -80,7 +80,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
         resetNameField()
         
         // Register a cell for the rooms.
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Identifiers.roomCell)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: Identifiers.roomCell)
     }
     
     /**
@@ -121,7 +121,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
             updateName(name, forAccessory: accessory)
         }
         else {
-            dispatch_group_enter(saveAccessoryGroup)
+            saveAccessoryGroup.enter()
             home.addAccessory(accessory) { error in
                 if let error = error {
                     self.hideActivityIndicator()
@@ -133,11 +133,11 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
                     self.home(self.home, assignAccessory:self.accessory, toRoom: self.selectedRoom)
                     self.updateName(name, forAccessory: self.accessory)
                 }
-                dispatch_group_leave(self.saveAccessoryGroup)
+                self.saveAccessoryGroup.leave()
             }
         }
         
-        dispatch_group_notify(saveAccessoryGroup, dispatch_get_main_queue()) {
+        saveAccessoryGroup.notify(queue: DispatchQueue.main) {
             self.hideActivityIndicator()
             if !self.didEncounterError {
                 self.dismiss(nil)
@@ -149,13 +149,13 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
         Informs the delegate that the accessory has been saved, and
         dismisses the view controller.
     */
-    @IBAction func dismiss(sender: AnyObject?) {
+    @IBAction func dismiss(_ sender: AnyObject?) {
         delegate?.accessoryViewController(self, didSaveAccessory: accessory)
         if editingExistingAccessory {
-            presentingViewController?.dismissViewControllerAnimated(true, completion: nil)
+            presentingViewController?.dismiss(animated: true, completion: nil)
         }
         else {
-            navigationController?.popViewControllerAnimated(true)
+            _ = navigationController?.popViewController(animated: true)
         }
     }
     
@@ -174,17 +174,17 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
         - parameter name:      The new name for the accessory.
         - parameter accessory: The accessory to rename.
     */
-    func updateName(name: String, forAccessory accessory: HMAccessory) {
+    func updateName(_ name: String, forAccessory accessory: HMAccessory) {
         if accessory.name == name {
             return
         }
-        dispatch_group_enter(saveAccessoryGroup)
+        saveAccessoryGroup.enter()
         accessory.updateName(name) { error in
             if let error = error {
                 self.displayError(error)
                 self.didEncounterError = true
             }
-            dispatch_group_leave(self.saveAccessoryGroup)
+            self.saveAccessoryGroup.leave()
         }
     }
     
@@ -195,23 +195,23 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
         - parameter accessory: The accessory to be assigned.
         - parameter room:      The room to which to assign the accessory.
     */
-    func home(home: HMHome, assignAccessory accessory: HMAccessory, toRoom room: HMRoom) {
+    func home(_ home: HMHome, assignAccessory accessory: HMAccessory, toRoom room: HMRoom) {
         if accessory.room == room {
             return
         }
-        dispatch_group_enter(saveAccessoryGroup)
-        home.assignAccessory(accessory, toRoom: room) { error in
+        saveAccessoryGroup.enter()
+        home.assignAccessory(accessory, to: room) { error in
             if let error = error {
                 self.displayError(error)
                 self.didEncounterError = true
             }
-            dispatch_group_leave(self.saveAccessoryGroup)
+            self.saveAccessoryGroup.leave()
         }
     }
     
     /// Tells the current accessory to identify itself.
     func identifyAccessory() {
-        accessory.identifyWithCompletionHandler { error in
+        accessory.identify { error in
             if let error = error {
                 self.displayError(error)
             }
@@ -227,38 +227,38 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
         else {
             action = NSLocalizedString("Add %@", comment: "Add Accessory")
         }
-        navigationItem.title = NSString(format: action, accessory.name) as String
+        navigationItem.title = NSString(format: action as NSString, accessory.name) as String
         nameField.text = accessory.name
-        nameField.enabled = home.isAdmin
+        nameField.isEnabled = home.isAdmin
         enableAddButtonIfApplicable()
     }
     
     /// Enables the save button if the name field is not empty.
     func enableAddButtonIfApplicable() {
-        addButton.enabled = home.isAdmin && trimmedName.characters.count > 0
+        addButton.isEnabled = home.isAdmin && trimmedName.characters.count > 0
     }
     
     /// - returns:  The `nameField`'s text, trimmed of newline and whitespace characters.
     var trimmedName: String {
-        return nameField.text!.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
+        return nameField.text!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
     
     /// Enables or disables the add button.
-    @IBAction func nameFieldDidChange(sender: AnyObject) {
+    @IBAction func nameFieldDidChange(_ sender: AnyObject) {
         enableAddButtonIfApplicable()
     }
     
     // MARK: Table View Methods
     
     /// - returns:  The number of `AddAccessoryTableViewSection`s.
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return AddAccessoryTableViewSection.count
     }
     
     /// - returns: The number rows for the rooms section. All other sections are static.
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch AddAccessoryTableViewSection(rawValue: section) {
-            case .Rooms?:
+            case .rooms?:
                 return home.allRooms.count
                 
             case nil:
@@ -270,30 +270,30 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
     }
     
     /// - returns:  `UITableViewAutomaticDimension` for dynamic cell, super otherwise.
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        switch AddAccessoryTableViewSection(rawValue: indexPath.section) {
-            case .Rooms?:
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        switch AddAccessoryTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .rooms?:
                 return UITableViewAutomaticDimension
                 
             case nil:
                 fatalError("Unexpected `AddAccessoryTableViewSection` raw value.")
                 
             default:
-                return super.tableView(tableView, heightForRowAtIndexPath: indexPath)
+                return super.tableView(tableView, heightForRowAt: indexPath)
         }
     }
     
     /// - returns:  A 'room cell' for the rooms section, super otherwise.
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        switch AddAccessoryTableViewSection(rawValue: indexPath.section) {
-            case .Rooms?:
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch AddAccessoryTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .rooms?:
                 return self.tableView(tableView, roomCellForRowAtIndexPath: indexPath)
                 
             case nil:
                 fatalError("Unexpected `AddAccessoryTableViewSection` raw value.")
                 
             default:
-                return super.tableView(tableView, cellForRowAtIndexPath: indexPath)
+                return super.tableView(tableView, cellForRowAt: indexPath)
         }
     }
     
@@ -301,35 +301,35 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
         Creates a cell with the name of each room within the home, displaying a checkmark if the room
         is the currently selected room.
     */
-    func tableView(tableView: UITableView, roomCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.roomCell, forIndexPath: indexPath)
-        let room = home.allRooms[indexPath.row] as HMRoom
+    func tableView(_ tableView: UITableView, roomCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.roomCell, for: indexPath)
+        let room = home.allRooms[(indexPath as NSIndexPath).row] as HMRoom
         
         cell.textLabel?.text = home.nameForRoom(room)
         
         // Put a checkmark on the selected room.
-        cell.accessoryType = room == selectedRoom ? .Checkmark : .None
+        cell.accessoryType = room == selectedRoom ? .checkmark : .none
         if !home.isAdmin {
-            cell.selectionStyle = .None
+            cell.selectionStyle = .none
         }
         return cell
     }
     
     
     /// Handles row selection based on the section.
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        switch AddAccessoryTableViewSection(rawValue: indexPath.section) {
-            case .Rooms?:
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        switch AddAccessoryTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .rooms?:
                 guard home.isAdmin else { return }
 
-                selectedRoom = home.allRooms[indexPath.row]
+                selectedRoom = home.allRooms[(indexPath as NSIndexPath).row]
 
-                let sections = NSIndexSet(index: AddAccessoryTableViewSection.Rooms.rawValue)
+                let sections = IndexSet(integer: AddAccessoryTableViewSection.rooms.rawValue)
                 
-                tableView.reloadSections(sections, withRowAnimation: .Automatic)
+                tableView.reloadSections(sections, with: .automatic)
                 
-            case .Identify?:
+            case .identify?:
                 identifyAccessory()
                 
             case nil:
@@ -340,23 +340,23 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
     }
     
     /// Required override.
-    override func tableView(tableView: UITableView, indentationLevelForRowAtIndexPath indexPath: NSIndexPath) -> Int {
-        return super.tableView(tableView, indentationLevelForRowAtIndexPath: NSIndexPath(forRow: 0, inSection: indexPath.section))
+    override func tableView(_ tableView: UITableView, indentationLevelForRowAt indexPath: IndexPath) -> Int {
+        return super.tableView(tableView, indentationLevelForRowAt: IndexPath(row: 0, section: (indexPath as NSIndexPath).section))
     }
     
     // MARK: HMHomeDelegate Methods
     
     // All home changes reload the view.
     
-    func home(home: HMHome, didUpdateNameForRoom room: HMRoom) {
+    func home(_ home: HMHome, didUpdateNameFor room: HMRoom) {
         tableView.reloadData()
     }
     
-    func home(home: HMHome, didAddRoom room: HMRoom) {
+    func home(_ home: HMHome, didAddRoom room: HMRoom) {
         tableView.reloadData()
     }
     
-    func home(home: HMHome, didRemoveRoom room: HMRoom)  {
+    func home(_ home: HMHome, didRemoveRoom room: HMRoom)  {
         if selectedRoom == room {
             // Reset the selected room if ours was deleted.
             selectedRoom = homeStore.home!.roomForEntireHome()
@@ -364,7 +364,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
         tableView.reloadData()
     }
     
-    func home(home: HMHome, didAddAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didAddAccessory accessory: HMAccessory) {
         /*
             Bridged accessories don't call the original completion handler if their 
             bridges are added to the home. We must respond to `HMHomeDelegate`'s 
@@ -375,14 +375,14 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
         }
     }
     
-    func home(home: HMHome, didUnblockAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didUnblockAccessory accessory: HMAccessory) {
         tableView.reloadData()
     }
     
     // MARK: HMAccessoryDelegate Methods
     
     /// If the accessory's name changes, we update the name field.
-    func accessoryDidUpdateName(accessory: HMAccessory) {
+    func accessoryDidUpdateName(_ accessory: HMAccessory) {
         resetNameField()
     }
 }

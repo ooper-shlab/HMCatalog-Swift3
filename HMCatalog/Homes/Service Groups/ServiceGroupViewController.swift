@@ -29,17 +29,17 @@ class ServiceGroupViewController: HMCatalogViewController, HMAccessoryDelegate {
     // MARK: View Methods
     
     /// Reloads the view.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         title = serviceGroup.name
         reloadData()
     }
     
     /// Pops the view controller if our data is invalid.
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if shouldPopViewController() {
-            navigationController?.popViewControllerAnimated(true)
+            _ = navigationController?.popViewController(animated: true)
         }
     }
     
@@ -51,7 +51,7 @@ class ServiceGroupViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - returns:  The number of accessories in the service group.
     */
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         let sections = accessories.count
         if sections == 0 {
             setBackgroundMessage(NSLocalizedString("No Services", comment: "No Services"))
@@ -64,7 +64,7 @@ class ServiceGroupViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// - returns:  The number of services for the accessory at the specified section.
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let accessory = accessories[section]
         let services = servicesForAccessory[accessory]
 
@@ -72,18 +72,18 @@ class ServiceGroupViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// - returns:  The name of the accessory at the specified section.
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return accessories[section].name
     }
     
     /// All cells in the table view represent services and can be deleted.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
     
     /// - returns:  A `ServiceCell` with the service at the given index path.
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.serviceCell, forIndexPath: indexPath) as! ServiceCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.serviceCell, for: indexPath) as! ServiceCell
         let service = serviceAtIndexPath(indexPath)
         cell.includeAccessoryText = false
         cell.service = service
@@ -100,8 +100,8 @@ class ServiceGroupViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Deleting a cell removes the corresponding service from the service group.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
             removeServiceAtIndexPath(indexPath)
         }
     }
@@ -111,7 +111,7 @@ class ServiceGroupViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - parameters indexPath: The `NSIndexPath` to remove.
     */
-    private func removeServiceAtIndexPath(indexPath: NSIndexPath) {
+    private func removeServiceAtIndexPath(_ indexPath: IndexPath) {
         let service = serviceAtIndexPath(indexPath)
         serviceGroup.removeService(service) { error in
             if let error = error {
@@ -129,15 +129,15 @@ class ServiceGroupViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         - returns: The service at the given index path
     */
-    private func serviceAtIndexPath(indexPath: NSIndexPath) -> HMService {
-        let accessory = accessories[indexPath.section]
+    private func serviceAtIndexPath(_ indexPath: IndexPath) -> HMService {
+        let accessory = accessories[(indexPath as NSIndexPath).section]
         let services = servicesForAccessory[accessory]!
-        return services[indexPath.row]
+        return services[(indexPath as NSIndexPath).row]
     }
     
     /// Passes the service group into the `AddServicesViewController`
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        super.prepareForSegue(segue, sender: sender)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
         if segue.identifier == Identifiers.addServicesSegue {
             let addServicesVC = segue.intendedDestinationViewController as! AddServicesViewController
             addServicesVC.serviceGroup = serviceGroup
@@ -152,7 +152,7 @@ class ServiceGroupViewController: HMCatalogViewController, HMAccessoryDelegate {
     */
     private func reloadData() {
         resetLists()
-        plusButton.enabled = shouldEnableAdd()
+        plusButton.isEnabled = shouldEnableAdd()
         tableView.reloadData()
     }
     
@@ -212,35 +212,35 @@ class ServiceGroupViewController: HMCatalogViewController, HMAccessoryDelegate {
     // MARK: HMHomeDelegate Methods
     
     /// Pops the view controller if our service group has been deleted.
-    func home(home: HMHome, didRemoveServiceGroup group: HMServiceGroup) {
+    func home(_ home: HMHome, didRemoveServiceGroup group: HMServiceGroup) {
         if group == serviceGroup {
-            navigationController?.popViewControllerAnimated(true)
+            _ = navigationController?.popViewController(animated: true)
         }
     }
     
     // Home and accessory changes result in a full data reload.
     
-    func home(home: HMHome, didAddService service: HMService, toServiceGroup group: HMServiceGroup) {
+    func home(_ home: HMHome, didAddService service: HMService, toServiceGroup group: HMServiceGroup) {
         if serviceGroup == group {
             reloadData()
         }
     }
     
-    func home(home: HMHome, didRemoveService service: HMService, fromServiceGroup group: HMServiceGroup) {
+    func home(_ home: HMHome, didRemoveService service: HMService, fromServiceGroup group: HMServiceGroup) {
         if serviceGroup == group {
             reloadData()
         }
     }
     
-    func home(home: HMHome, didRemoveAccessory accessory: HMAccessory) {
+    func home(_ home: HMHome, didRemoveAccessory accessory: HMAccessory) {
         reloadData()
     }
     
-    func accessoryDidUpdateServices(accessory: HMAccessory) {
+    func accessoryDidUpdateServices(_ accessory: HMAccessory) {
         reloadData()
     }
     
-    func accessory(accessory: HMAccessory, didUpdateNameForService service: HMService) {
+    func accessory(_ accessory: HMAccessory, didUpdateNameFor service: HMService) {
         reloadData()
     }
 }

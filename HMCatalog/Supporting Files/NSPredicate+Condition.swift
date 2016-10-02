@@ -16,7 +16,7 @@ enum HomeKitConditionType {
         The tuple represents the `HMCharacteristic` and its condition value.
         For example, "Current gargage door is set to 'Open'".
     */
-    case Characteristic(HMCharacteristic, NSCopying)
+    case characteristic(HMCharacteristic, NSCopying)
     
     /**
         Represents a time condition.
@@ -24,7 +24,7 @@ enum HomeKitConditionType {
         The tuple represents the time ordering and the sun state.
         For example, "Before sunset".
     */
-    case SunTime(TimeConditionOrder, TimeConditionSunState)
+    case sunTime(TimeConditionOrder, TimeConditionSunState)
     
     /**
         Represents an exact time condition.
@@ -32,10 +32,10 @@ enum HomeKitConditionType {
         The tuple represents the time ordering and time.
         For example, "At 12:00pm".
     */
-    case ExactTime(TimeConditionOrder, NSDateComponents)
+    case exactTime(TimeConditionOrder, DateComponents)
     
     /// The predicate is not a HomeKit condition.
-    case Unknown
+    case unknown
 }
 
 extension NSPredicate {
@@ -54,7 +54,7 @@ extension NSPredicate {
         var valuePredicate: NSComparisonPredicate? = nil
         
         for subpredicate in subpredicates {
-            if let comparison = subpredicate as? NSComparisonPredicate where comparison.leftExpression.expressionType == .KeyPathExpressionType && comparison.rightExpression.expressionType == .ConstantValueExpressionType {
+            if let comparison = subpredicate as? NSComparisonPredicate , comparison.leftExpression.expressionType == .keyPath && comparison.rightExpression.expressionType == .constantValue {
                 switch comparison.leftExpression.keyPath {
                     case HMCharacteristicKeyPath:
                         characteristicPredicate = comparison
@@ -69,8 +69,8 @@ extension NSPredicate {
         }
         
         if let characteristic = characteristicPredicate?.rightExpression.constantValue as? HMCharacteristic,
-            characteristicValue = valuePredicate?.rightExpression.constantValue as? NSCopying {
-                return .Characteristic(characteristic, characteristicValue)
+            let characteristicValue = valuePredicate?.rightExpression.constantValue as? NSCopying {
+                return .characteristic(characteristic, characteristicValue)
         }
         return nil
     }
@@ -82,35 +82,35 @@ extension NSPredicate {
     */
     private func sunState() -> HomeKitConditionType? {
         guard let comparison = self as? NSComparisonPredicate else { return nil }
-        guard comparison.leftExpression.expressionType == .KeyPathExpressionType else { return nil }
-        guard comparison.rightExpression.expressionType == .FunctionExpressionType else { return nil }
+        guard comparison.leftExpression.expressionType == .keyPath else { return nil }
+        guard comparison.rightExpression.expressionType == .function else { return nil }
         guard comparison.rightExpression.function == "now" else { return nil }
         guard comparison.rightExpression.arguments?.count == 0 else { return nil }
         
         switch (comparison.leftExpression.keyPath, comparison.predicateOperatorType) {
-            case (HMSignificantEventSunrise, .LessThanPredicateOperatorType):
-                return .SunTime(.After, .Sunrise)
+            case (HMSignificantEventSunrise, .lessThan):
+                return .sunTime(.after, .sunrise)
                 
-            case (HMSignificantEventSunrise, .LessThanOrEqualToPredicateOperatorType):
-                return .SunTime(.After, .Sunrise)
+            case (HMSignificantEventSunrise, .lessThanOrEqualTo):
+                return .sunTime(.after, .sunrise)
                 
-            case (HMSignificantEventSunrise, .GreaterThanPredicateOperatorType):
-                return .SunTime(.Before, .Sunrise)
+            case (HMSignificantEventSunrise, .greaterThan):
+                return .sunTime(.before, .sunrise)
                 
-            case (HMSignificantEventSunrise, .GreaterThanOrEqualToPredicateOperatorType):
-                return .SunTime(.Before, .Sunrise)
+            case (HMSignificantEventSunrise, .greaterThanOrEqualTo):
+                return .sunTime(.before, .sunrise)
                 
-            case (HMSignificantEventSunset, .LessThanPredicateOperatorType):
-                return .SunTime(.After, .Sunset)
+            case (HMSignificantEventSunset, .lessThan):
+                return .sunTime(.after, .sunset)
                 
-            case (HMSignificantEventSunset, .LessThanOrEqualToPredicateOperatorType):
-                return .SunTime(.After, .Sunset)
+            case (HMSignificantEventSunset, .lessThanOrEqualTo):
+                return .sunTime(.after, .sunset)
                 
-            case (HMSignificantEventSunset, .GreaterThanPredicateOperatorType):
-                return .SunTime(.Before, .Sunset)
+            case (HMSignificantEventSunset, .greaterThan):
+                return .sunTime(.before, .sunset)
                 
-            case (HMSignificantEventSunset, .GreaterThanOrEqualToPredicateOperatorType):
-                return .SunTime(.Before, .Sunset)
+            case (HMSignificantEventSunset, .greaterThanOrEqualTo):
+                return .sunTime(.before, .sunset)
                 
             default:
                 return nil
@@ -124,20 +124,20 @@ extension NSPredicate {
     */
     private func exactTime() -> HomeKitConditionType? {
         guard let comparison = self as? NSComparisonPredicate else { return nil }
-        guard comparison.leftExpression.expressionType == .FunctionExpressionType else { return nil }
+        guard comparison.leftExpression.expressionType == .function else { return nil }
         guard comparison.leftExpression.function == "now" else { return nil }
-        guard comparison.rightExpression.expressionType == .ConstantValueExpressionType else { return nil }
-        guard let dateComponents = comparison.rightExpression.constantValue as? NSDateComponents else { return nil }
+        guard comparison.rightExpression.expressionType == .constantValue else { return nil }
+        guard let dateComponents = comparison.rightExpression.constantValue as? DateComponents else { return nil }
         
         switch comparison.predicateOperatorType {
-            case .LessThanPredicateOperatorType, .LessThanOrEqualToPredicateOperatorType:
-                return .ExactTime(.Before, dateComponents)
+            case .lessThan, .lessThanOrEqualTo:
+                return .exactTime(.before, dateComponents)
             
-            case .GreaterThanPredicateOperatorType, .GreaterThanOrEqualToPredicateOperatorType:
-                return .ExactTime(.After, dateComponents)
+            case .greaterThan, .greaterThanOrEqualTo:
+                return .exactTime(.after, dateComponents)
             
-            case .EqualToPredicateOperatorType:
-                return .ExactTime(.At, dateComponents)
+            case .equalTo:
+                return .exactTime(.at, dateComponents)
             
             default:
                 return nil
@@ -156,7 +156,7 @@ extension NSPredicate {
             return exactTime
         }
         else {
-            return .Unknown
+            return .unknown
         }
     }
 }

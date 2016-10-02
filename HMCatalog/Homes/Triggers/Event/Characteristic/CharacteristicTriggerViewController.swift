@@ -28,7 +28,7 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
     }
     
     /// An internal array of `HMCharacteristicEvent`s to save into the trigger.
-    private var events = [HMCharacteristicEvent]()
+    private var events = [HMCharacteristicEvent<CellValueType>]()
     
     // MARK: View Methods
     
@@ -39,14 +39,14 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
     }
     
     /// Reloads the internal data.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         reloadData()
     }
     
     /// Passes our event trigger and trigger creator to the `CharacteristicSelectionViewController`
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        super.prepareForSegue(segue, sender: sender)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
         if segue.identifier == Identifiers.selectCharacteristicSegue {
             if let destinationVC = segue.intendedDestinationViewController as? CharacteristicSelectionViewController {
                 destinationVC.eventTrigger = eventTrigger
@@ -61,9 +61,9 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
         - returns:  The characteristic events for the Characteristics section.
                     Defaults to super implementation.
     */
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch sectionForIndex(section) {
-            case .Characteristics?:
+            case .characteristics?:
                 // Plus one for the add row.
                 return events.count + 1
             
@@ -79,27 +79,27 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
         Switches based on cell type to generate the correct cell for the index path.
         Defaults to super implementation.
     */
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPathIsAdd(indexPath) {
             return self.tableView(tableView, addCellForRowAtIndexPath: indexPath)
         }
         
-        switch sectionForIndex(indexPath.section) {
-            case .Characteristics?:
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .characteristics?:
                 return self.tableView(tableView, conditionCellForRowAtIndexPath: indexPath)
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
                 
             default:
-                return super.tableView(tableView, cellForRowAtIndexPath: indexPath)
+                return super.tableView(tableView, cellForRowAt: indexPath)
         }
     }
     
     /// - returns:  A 'condition cell' with the event at the specified index path.
-    private func tableView(tableView: UITableView, conditionCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.conditionCell, forIndexPath: indexPath) as! ConditionCell
-        let event = events[indexPath.row]
+    private func tableView(_ tableView: UITableView, conditionCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.conditionCell, for: indexPath) as! ConditionCell
+        let event = events[(indexPath as NSIndexPath).row]
         cell.setCharacteristic(event.characteristic, targetValue: event.triggerValue!)
         return cell
     }
@@ -108,10 +108,10 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
         - returns:  An 'add cell' with localized text.
                     Defaults to super implementation.
     */
-    override func tableView(tableView: UITableView, addCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        switch sectionForIndex(indexPath.section) {
-            case .Characteristics?:
-                let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.addCell, forIndexPath: indexPath)
+    override func tableView(_ tableView: UITableView, addCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .characteristics?:
+                let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.addCell, for: indexPath)
                 cell.textLabel?.text = NSLocalizedString("Add Characteristic…", comment: "Add Characteristic")
                 cell.textLabel?.textColor = UIColor.editableBlueColor()
                 return cell
@@ -128,22 +128,22 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
         Handles the selection of characteristic events.
         Defaults to super implementation for other sections.
     */
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        switch sectionForIndex(indexPath.section) {
-            case .Characteristics?:
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .characteristics?:
                 if indexPathIsAdd(indexPath) {
                     addEvent()
                     return
                 }
-                let cell = tableView.cellForRowAtIndexPath(indexPath)
-                performSegueWithIdentifier(Identifiers.selectCharacteristicSegue, sender: cell)
+                let cell = tableView.cellForRow(at: indexPath)
+                performSegue(withIdentifier: Identifiers.selectCharacteristicSegue, sender: cell)
             
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
                 
             default:
-                super.tableView(tableView, didSelectRowAtIndexPath: indexPath)
+                super.tableView(tableView, didSelectRowAt: indexPath)
         }
     }
     
@@ -151,19 +151,19 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
         - returns:  `true` for characteristic cells,
                     otherwise defaults to super implementation.
     */
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         if indexPathIsAdd(indexPath) {
             return false
         }
-        switch sectionForIndex(indexPath.section) {
-            case .Characteristics?:
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .characteristics?:
                 return true
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
                 
             default:
-                return super.tableView(tableView, canEditRowAtIndexPath: indexPath)
+                return super.tableView(tableView, canEditRowAt: indexPath)
         }
     }
     
@@ -171,19 +171,19 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
         Removes events from the trigger creator.
         Defaults to super implementation for other sections.
     */
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            switch sectionForIndex(indexPath.section) {
-                case .Characteristics?:
-                    characteristicTriggerCreator.removeEvent(events[indexPath.row])
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            switch sectionForIndex((indexPath as NSIndexPath).section) {
+                case .characteristics?:
+                    characteristicTriggerCreator.removeEvent(events[(indexPath as NSIndexPath).row])
                     events = characteristicTriggerCreator.events
-                    tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                    tableView.deleteRows(at: [indexPath], with: .automatic)
                     
                 case nil:
                     fatalError("Unexpected `TriggerTableViewSection` raw value.")
                     
                 default:
-                    super.tableView(tableView, commitEditingStyle: editingStyle, forRowAtIndexPath: indexPath)
+                    super.tableView(tableView, commit: editingStyle, forRowAt: indexPath)
             }
         }
     }
@@ -192,9 +192,9 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
         - returns:  A localized description of characteristic events
                     Defaults to super implementation for other sections.
     */
-    override func tableView(tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         switch sectionForIndex(section) {
-            case .Characteristics?:
+            case .characteristics?:
                 return NSLocalizedString("This trigger will activate when any of these characteristics change to their value. For example, 'run when the garage door is opened'.", comment: "Characteristic Trigger Description")
             
             case nil:
@@ -215,15 +215,15 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
     
     /// Performs a segue to the `CharacteristicSelectionViewController`.
     private func addEvent() {
-        characteristicTriggerCreator.mode = .Event
-        self.performSegueWithIdentifier(Identifiers.selectCharacteristicSegue, sender: nil)
+        characteristicTriggerCreator.mode = .event
+        self.performSegue(withIdentifier: Identifiers.selectCharacteristicSegue, sender: nil)
     }
     
     /// - returns:  `true` if the section is the Characteristic 'add row'; otherwise defaults to super implementation.
-    override func indexPathIsAdd(indexPath: NSIndexPath) -> Bool {
-        switch sectionForIndex(indexPath.section) {
-            case .Characteristics?:
-                return indexPath.row == events.count
+    override func indexPathIsAdd(_ indexPath: IndexPath) -> Bool {
+        switch sectionForIndex((indexPath as NSIndexPath).section) {
+            case .characteristics?:
+                return (indexPath as NSIndexPath).row == events.count
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
@@ -240,22 +240,22 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
         
         - returns:  The `TriggerTableViewSection` for the given index.
     */
-    override func sectionForIndex(index: Int) -> TriggerTableViewSection? {
+    override func sectionForIndex(_ index: Int) -> TriggerTableViewSection? {
         switch index {
             case 0:
-                return .Name
+                return .name
             
             case 1:
-                return .Enabled
+                return .enabled
             
             case 2:
-                return .Characteristics
+                return .characteristics
             
             case 3:
-                return .Conditions
+                return .conditions
             
             case 4:
-                return .ActionSets
+                return .actionSets
             
             default:
                 return nil

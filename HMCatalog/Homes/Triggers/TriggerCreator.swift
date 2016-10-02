@@ -20,8 +20,8 @@ class TriggerCreator {
     internal var home: HMHome
     internal var trigger: HMTrigger?
     internal var name = ""
-    internal let saveTriggerGroup = dispatch_group_create()
-    internal var errors = [NSError]()
+    internal let saveTriggerGroup = DispatchGroup()
+    internal var errors = [Error]()
     
     /**
         Initializes a trigger creator from an existing trigger (if it exists),
@@ -45,7 +45,7 @@ class TriggerCreator {
         - parameter actionSets: The new list of action sets to set for the trigger
         - parameter completion: The closure to call when all configurations have been completed.
     */
-    func saveTriggerWithName(name: String, actionSets: [HMActionSet], completion: (HMTrigger?, [NSError]) -> Void) {
+    func saveTriggerWithName(_ name: String, actionSets: [HMActionSet], completion: @escaping (HMTrigger?, [Error]) -> Void) {
         self.name = name
         if trigger != nil {
             // Let the subclass update the trigger.
@@ -55,15 +55,15 @@ class TriggerCreator {
         }
         else {
             self.trigger = newTrigger()
-            dispatch_group_enter(saveTriggerGroup)
+            saveTriggerGroup.enter()
             home.addTrigger(trigger!) { error in
                 if let error = error {
-                    self.errors.append(error)
+                    self.errors.append(error as NSError)
                 }
                 else {
                     self.configureWithActionSets(actionSets)
                 }
-                dispatch_group_leave(self.saveTriggerGroup)
+                self.saveTriggerGroup.leave()
             }
         }
         
@@ -71,7 +71,7 @@ class TriggerCreator {
             Call the completion block with our event trigger and any accumulated errors
             from the saving process.
         */
-        dispatch_group_notify(saveTriggerGroup, dispatch_get_main_queue()) {
+        saveTriggerGroup.notify(queue: DispatchQueue.main) {
             self.cleanUp()
             completion(self.trigger, self.errors)
         }
@@ -112,18 +112,18 @@ class TriggerCreator {
         
         - parameter actionSets: Array of `HMActionSet`s to match.
     */
-    private func configureWithActionSets(actionSets: [HMActionSet]) {
+    private func configureWithActionSets(_ actionSets: [HMActionSet]) {
         guard let trigger = trigger else { return }
         /*
             Save a standard completion handler to use when we either add or remove 
             an action set.
         */
-        let defaultCompletion: NSError? -> Void = { error in
+        let defaultCompletion: (NSError?) -> Void = { error in
             // Leave the dispatch group, to notify that we've finished this task.
             if let error = error {
                 self.errors.append(error)
             }
-            dispatch_group_leave(self.saveTriggerGroup)
+            self.saveTriggerGroup.leave()
         }
         
         // First pass, remove the action sets that have been deselected.
@@ -131,8 +131,8 @@ class TriggerCreator {
             if actionSets.contains(actionSet)  {
                 continue
             }
-            dispatch_group_enter(saveTriggerGroup)
-            trigger.removeActionSet(actionSet, completionHandler: defaultCompletion)
+            saveTriggerGroup.enter()
+            trigger.removeActionSet(actionSet, completionHandler: defaultCompletion as! (Error?) -> Void)
         }
         
         // Second pass, add the new action sets that were just selected.
@@ -140,8 +140,8 @@ class TriggerCreator {
             if trigger.actionSets.contains(actionSet)  {
                 continue
             }
-            dispatch_group_enter(saveTriggerGroup)
-            trigger.addActionSet(actionSet, completionHandler: defaultCompletion)
+            saveTriggerGroup.enter()
+            trigger.addActionSet(actionSet, completionHandler: defaultCompletion as! (Error?) -> Void)
         }
     }
     
@@ -150,12 +150,12 @@ class TriggerCreator {
         if trigger?.name == self.name {
             return
         }
-        dispatch_group_enter(saveTriggerGroup)
+        saveTriggerGroup.enter()
         trigger?.updateName(name) { error in
             if let error = error {
-                self.errors.append(error)
+                self.errors.append(error as NSError)
             }
-            dispatch_group_leave(self.saveTriggerGroup)
+            self.saveTriggerGroup.leave()
         }
     }
 }

@@ -9,6 +9,8 @@
 import UIKit
 import HomeKit
 
+typealias CellValueType = NSCopying
+
 /// Methods for handling cell reads and updates.
 protocol CharacteristicCellDelegate {
     
@@ -24,7 +26,7 @@ protocol CharacteristicCellDelegate {
         so their values are cached and updates are coalesced. Subclasses can decide
         whether or not their values are meant to be updated immediately.
     */
-    func characteristicCell(cell: CharacteristicCell, didUpdateValue value: AnyObject, forCharacteristic characteristic: HMCharacteristic, immediate: Bool)
+    func characteristicCell(_ cell: CharacteristicCell, didUpdateValue value: CellValueType, forCharacteristic characteristic: HMCharacteristic, immediate: Bool)
     
     /**
         Called when the characteristic cell needs to reload its value from an external source.
@@ -34,7 +36,7 @@ protocol CharacteristicCellDelegate {
         - parameter characteristic: The characteristic for whose value the cell is asking.
         - parameter completion:     The closure that the cell provides to be called when values have been read successfully.
     */
-    func characteristicCell(cell: CharacteristicCell, readInitialValueForCharacteristic characteristic: HMCharacteristic, completion: (AnyObject?, NSError?) -> Void)
+    func characteristicCell(_ cell: CharacteristicCell, readInitialValueForCharacteristic characteristic: HMCharacteristic, completion: @escaping (CellValueType?, Error?) -> Void)
 }
 
 /**
@@ -72,11 +74,11 @@ class CharacteristicCell: UITableViewCell {
     var showsFavorites = false {
         didSet {
             if showsFavorites {
-                favoriteButton.hidden = false
+                favoriteButton.isHidden = false
                 favoriteButtonWidthConstraint.constant = favoriteButtonHeightContraint.constant
             }
             else {
-                favoriteButton.hidden = true
+                favoriteButton.isHidden = true
                 favoriteButtonWidthConstraint.constant = 15.0
             }
         }
@@ -87,7 +89,7 @@ class CharacteristicCell: UITableViewCell {
                     `false` otherwise.
     */
     var enabled: Bool {
-        return (characteristic.service?.accessory?.reachable ?? false)
+        return (characteristic.service?.accessory?.isReachable ?? false)
     }
     
     /**
@@ -112,9 +114,9 @@ class CharacteristicCell: UITableViewCell {
         didSet {
             typeLabel.text = characteristic.localizedCharacteristicType
             
-            selectionStyle = characteristic.isIdentify ? .Default : .None
+            selectionStyle = characteristic.isIdentify ? .default : .none
             
-            setValue(characteristic.value, notify: false)
+            setValue(characteristic.value as? CellValueType, notify: false)
 
             if characteristic.isWriteOnly {
                 // Don't read the value for write-only characteristics.
@@ -122,7 +124,7 @@ class CharacteristicCell: UITableViewCell {
             }
             
             // Set initial state of the favorite button
-            favoriteButton.selected = characteristic.isFavorite
+            favoriteButton.isSelected = characteristic.isFavorite
             
             // "Enable" the cell if the accessory is reachable or we are displaying the favorites.
             
@@ -155,9 +157,9 @@ class CharacteristicCell: UITableViewCell {
         Toggles the star button and saves the favorite status
         of the characteristic in the FavoriteManager.
     */
-    @IBAction func didTapFavoriteButton(sender: UIButton) {
-        sender.selected = !sender.selected
-        characteristic.isFavorite = sender.selected
+    @IBAction func didTapFavoriteButton(_ sender: UIButton) {
+        sender.isSelected = !sender.isSelected
+        characteristic.isFavorite = sender.isSelected
     }
     
     /**
@@ -166,7 +168,7 @@ class CharacteristicCell: UITableViewCell {
         - parameter newValue: The new value.
         - parameter notify:   If true, the cell notifies its delegate of the change.
     */
-    func setValue(newValue: AnyObject?, notify: Bool) {
+    func setValue(_ newValue: CellValueType?, notify: Bool) {
         value = newValue
         if let newValue = newValue {
             resetValueLabel()
@@ -175,7 +177,7 @@ class CharacteristicCell: UITableViewCell {
                 but we do have to deal with incoming nil values.
             */
             if notify {
-                delegate?.characteristicCell(self, didUpdateValue: newValue, forCharacteristic: characteristic, immediate: self.dynamicType.updatesImmediately)
+                delegate?.characteristicCell(self, didUpdateValue: newValue, forCharacteristic: characteristic, immediate: type(of: self).updatesImmediately)
             }
         }
     }

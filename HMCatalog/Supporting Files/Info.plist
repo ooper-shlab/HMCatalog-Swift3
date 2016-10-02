@@ -22,10 +22,10 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>HMCatalog needs your location to search for relevant places in your area.</string>
 	<key>NSHomeKitUsageDescription</key>
 	<string>HMCatalog needs access top your HomeKit devices.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>HMCatalog needs your location to search for relevant places in your area.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>Launch Screen</string>
 	<key>UIMainStoryboardFile</key>

@@ -12,20 +12,20 @@ import HomeKit
 /// A `UITableViewCell` subclass that displays a trigger condition.
 class ConditionCell: UITableViewCell {
     /// A static, short date formatter.
-    static let dateFormatter: NSDateFormatter = {
-        let dateFormatter = NSDateFormatter()
-        dateFormatter.dateStyle = .NoStyle
-        dateFormatter.timeStyle = .ShortStyle
-        dateFormatter.locale = NSLocale.currentLocale()
+    static let dateFormatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .none
+        dateFormatter.timeStyle = .short
+        dateFormatter.locale = Locale.current
         return dateFormatter
         }()
     
     /// Ignores the passed-in style and overrides it with .Subtitle.
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-        super.init(style: .Subtitle, reuseIdentifier: reuseIdentifier)
-        selectionStyle = .None
-        detailTextLabel?.textColor = UIColor.lightGrayColor()
-        accessoryType = .None
+        super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
+        selectionStyle = .none
+        detailTextLabel?.textColor = UIColor.lightGray
+        accessoryType = .none
     }
     
     /// Required because we overwrote a designated initializer.
@@ -41,12 +41,12 @@ class ConditionCell: UITableViewCell {
         - parameter characteristic: The characteristic this cell represents.
         - parameter targetValue:    The target value from this action.
     */
-    func setCharacteristic(characteristic: HMCharacteristic, targetValue: AnyObject) {
+    func setCharacteristic(_ characteristic: HMCharacteristic, targetValue: AnyObject) {
         let targetDescription = "\(characteristic.localizedDescription) → \(characteristic.localizedDescriptionForValue(targetValue))"
         textLabel?.text = targetDescription
         
         let contextDescription = NSLocalizedString("%@ in %@", comment: "Service in Accessory")
-        if let service = characteristic.service, accessory = service.accessory {
+        if let service = characteristic.service, let accessory = service.accessory {
             detailTextLabel?.text = String(format: contextDescription, service.name, accessory.name)
         }
         else {
@@ -61,16 +61,16 @@ class ConditionCell: UITableViewCell {
         - parameter timeString: The localized time string.
         - parameter contextString: A localized string describing the time type.
     */
-    private func setOrder(order: TimeConditionOrder, timeString: String, contextString: String) {
+    private func setOrder(_ order: TimeConditionOrder, timeString: String, contextString: String) {
         let formatString: String
         switch order {
-            case .Before:
+            case .before:
                 formatString = NSLocalizedString("Before %@", comment: "Before Time")
             
-            case .After:
+            case .after:
                 formatString = NSLocalizedString("After %@", comment: "After Time")
             
-            case .At:
+            case .at:
                 formatString = NSLocalizedString("At %@", comment: "At Time")
         }
         textLabel?.text = String(format: formatString, timeString)
@@ -83,9 +83,9 @@ class ConditionCell: UITableViewCell {
         - parameter order: A `TimeConditionOrder` which will map to a localized string.
         - parameter dateComponents: The date components of the exact time.
     */
-    func setOrder(order: TimeConditionOrder, dateComponents: NSDateComponents) {
-        let date = NSCalendar.currentCalendar().dateFromComponents(dateComponents)
-        let timeString = ConditionCell.dateFormatter.stringFromDate(date!)
+    func setOrder(_ order: TimeConditionOrder, dateComponents: DateComponents) {
+        let date = Calendar.current.date(from: dateComponents)
+        let timeString = ConditionCell.dateFormatter.string(from: date!)
         setOrder(order, timeString: timeString, contextString: NSLocalizedString("Relative to Time", comment: "Relative to Time"))
     }
     
@@ -95,13 +95,13 @@ class ConditionCell: UITableViewCell {
         - parameter order: A `TimeConditionOrder` which will map to a localized string.
         - parameter sunState: A `TimeConditionSunState` which will map to localized string.
     */
-    func setOrder(order: TimeConditionOrder, sunState: TimeConditionSunState) {
+    func setOrder(_ order: TimeConditionOrder, sunState: TimeConditionSunState) {
         let timeString: String
         switch sunState {
-            case .Sunrise:
+            case .sunrise:
                 timeString = NSLocalizedString("Sunrise", comment: "Sunrise")
             
-            case .Sunset:
+            case .sunset:
                 timeString = NSLocalizedString("Sunset", comment: "Sunset")
         }
         setOrder(order, timeString: timeString , contextString: NSLocalizedString("Relative to sun", comment: "Relative to Sun"))

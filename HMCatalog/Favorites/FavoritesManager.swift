@@ -29,24 +29,24 @@ class FavoritesManager {
         An internal mapping of accessory unique identifiers to an array of their 
         favorite characteristic's unique identifiers.
     */
-    private var accessoryToCharacteristicIdentifiers = [NSUUID: [NSUUID]]()
+    private var accessoryToCharacteristicIdentifiers = [UUID: [UUID]]()
     
     /// An internal array of all favorite accessory unique identifiers.
-    private var accessoryIdentifiers = [NSUUID]()
+    private var accessoryIdentifiers = [UUID]()
     
     /**
         Loads the unique identifier map and array data from `NSUserDefaults`
         into internal variables.
     */
     init() {
-        let userDefaults = NSUserDefaults.standardUserDefaults()
+        let userDefaults = UserDefaults.standard
 
-        if let mapData = userDefaults.objectForKey(FavoritesManager.accessoryToCharacteristicIdentifierMappingKey) as? NSData,
-            arrayData = userDefaults.objectForKey(FavoritesManager.accessoryIdentifiersKey) as? NSData {
+        if let mapData = userDefaults.object(forKey: FavoritesManager.accessoryToCharacteristicIdentifierMappingKey) as? Data,
+            let arrayData = userDefaults.object(forKey: FavoritesManager.accessoryIdentifiersKey) as? Data {
         
-            accessoryToCharacteristicIdentifiers = NSKeyedUnarchiver.unarchiveObjectWithData(mapData) as? [NSUUID: [NSUUID]] ?? [:]
+            accessoryToCharacteristicIdentifiers = NSKeyedUnarchiver.unarchiveObject(with: mapData) as? [UUID: [UUID]] ?? [:]
             
-            accessoryIdentifiers = NSKeyedUnarchiver.unarchiveObjectWithData(arrayData) as? [NSUUID] ?? []
+            accessoryIdentifiers = NSKeyedUnarchiver.unarchiveObject(with: arrayData) as? [UUID] ?? []
         }
     }
     
@@ -61,8 +61,8 @@ class FavoritesManager {
         }
         
         // Need to flatten an [[HMCharacteristic]] to an [HMCharacteristic].
-        return favoriteCharacteristics.reduce([], combine: +)
-                                      .sort(characteristicOrderedBefore)
+        return favoriteCharacteristics.reduce([], +)
+                                      .sorted(by: characteristicOrderedBefore)
     }
     
     /**
@@ -80,8 +80,8 @@ class FavoritesManager {
         }
         
         // Need to flatten [[[HMAccessory]]] to [HMAccessory].
-        return newAccessories.reduce([], combine: +)
-                             .reduce([], combine: +)
+        return newAccessories.reduce([], +)
+                             .reduce([], +)
                              .sortByLocalizedName()
     }
     
@@ -107,7 +107,7 @@ class FavoritesManager {
         
         - returns:  A `Bool`, whether or not the characteristic is a favorite.
     */
-    func characteristicIsFavorite(characteristic: HMCharacteristic) -> Bool {
+    func characteristicIsFavorite(_ characteristic: HMCharacteristic) -> Bool {
         guard let accessoryIdentifier = characteristic.service?.accessory?.uniqueIdentifier else {
             return false
         }
@@ -124,12 +124,12 @@ class FavoritesManager {
         
         - parameter characteristic: The `HMCharacteristic` to favorite.
     */
-    func favoriteCharacteristic(characteristic: HMCharacteristic) {
+    func favoriteCharacteristic(_ characteristic: HMCharacteristic) {
         if characteristicIsFavorite(characteristic) {
             return
         }
 
-        if let accessoryIdentifier = characteristic.service?.accessory?.uniqueIdentifier where accessoryToCharacteristicIdentifiers[accessoryIdentifier] != nil {
+        if let accessoryIdentifier = characteristic.service?.accessory?.uniqueIdentifier , accessoryToCharacteristicIdentifiers[accessoryIdentifier] != nil {
             // Accessory is already favorite, add the characteristic.
             accessoryToCharacteristicIdentifiers[accessoryIdentifier]?.append(characteristic.uniqueIdentifier)
             save()
@@ -149,14 +149,14 @@ class FavoritesManager {
         
         - returns: An array of `HMCharacteristic`s which are favorites for the provided accessory.
     */
-    func favoriteCharacteristicsForAccessory(accessory: HMAccessory) -> [HMCharacteristic] {
+    func favoriteCharacteristicsForAccessory(_ accessory: HMAccessory) -> [HMCharacteristic] {
         let characteristics = accessory.services.map { service in
             return service.characteristics.filter { characteristic in
                 return characteristic.isFavorite
             }
         }
-        return characteristics.reduce([], combine: +)
-                              .sort(characteristicOrderedBefore)
+        return characteristics.reduce([], +)
+                              .sorted(by: characteristicOrderedBefore)
     }
     
     
@@ -165,24 +165,24 @@ class FavoritesManager {
         
         - parameter characteristic: The `HMCharacteristic` to unfavorite.
     */
-    func unfavoriteCharacteristic(characteristic: HMCharacteristic) {
+    func unfavoriteCharacteristic(_ characteristic: HMCharacteristic) {
         guard let accessoryIdentifier = characteristic.service?.accessory?.uniqueIdentifier else { return }
 
         guard let characteristicIdentifiers = accessoryToCharacteristicIdentifiers[accessoryIdentifier] else { return }
         
-        guard let indexOfCharacteristic = characteristicIdentifiers.indexOf(characteristic.uniqueIdentifier) else { return }
+        guard let indexOfCharacteristic = characteristicIdentifiers.index(of: characteristic.uniqueIdentifier) else { return }
         
         // Remove the characteristic from the mapped collection.
-        accessoryToCharacteristicIdentifiers[accessoryIdentifier]?.removeAtIndex(indexOfCharacteristic)
-        if let indexOfAccessory = accessoryIdentifiers.indexOf(accessoryIdentifier),
-               isEmpty = accessoryToCharacteristicIdentifiers[accessoryIdentifier]?.isEmpty
-               where isEmpty {
+        accessoryToCharacteristicIdentifiers[accessoryIdentifier]?.remove(at: indexOfCharacteristic)
+        if let indexOfAccessory = accessoryIdentifiers.index(of: accessoryIdentifier),
+               let isEmpty = accessoryToCharacteristicIdentifiers[accessoryIdentifier]?.isEmpty
+               , isEmpty {
             /*
                 If that was the last characteristic for that accessory, remove
                 the accessory from the internal array.
             */
-            accessoryIdentifiers.removeAtIndex(indexOfAccessory)
-            accessoryToCharacteristicIdentifiers.removeValueForKey(accessoryIdentifier)
+            accessoryIdentifiers.remove(at: indexOfAccessory)
+            accessoryToCharacteristicIdentifiers.removeValue(forKey: accessoryIdentifier)
         }
 
         save()
@@ -200,13 +200,13 @@ class FavoritesManager {
     private func save() {
         removeUnusedIdentifiers()
         
-        let userDefaults = NSUserDefaults.standardUserDefaults()
+        let userDefaults = UserDefaults.standard
         
-        let mapData = NSKeyedArchiver.archivedDataWithRootObject(accessoryToCharacteristicIdentifiers)
-        let arrayData = NSKeyedArchiver.archivedDataWithRootObject(accessoryIdentifiers)
+        let mapData = NSKeyedArchiver.archivedData(withRootObject: accessoryToCharacteristicIdentifiers)
+        let arrayData = NSKeyedArchiver.archivedData(withRootObject: accessoryIdentifiers)
         
-        userDefaults.setObject(mapData, forKey: FavoritesManager.accessoryToCharacteristicIdentifierMappingKey)
-        userDefaults.setObject(arrayData, forKey: FavoritesManager.accessoryIdentifiersKey)
+        userDefaults.set(mapData, forKey: FavoritesManager.accessoryToCharacteristicIdentifierMappingKey)
+        userDefaults.set(arrayData, forKey: FavoritesManager.accessoryIdentifiersKey)
     }
     
     /**
@@ -241,7 +241,7 @@ class FavoritesManager {
         - returns:  `true` if there exists an accessory in HomeKit with the given
                     identifier; `false` otherwise.
     */
-    private func accessoryIdentifierExists(identifier: NSUUID) -> Bool {
+    private func accessoryIdentifierExists(_ identifier: UUID) -> Bool {
         return HomeStore.sharedStore.homeManager.homes.contains { home in
             return home.accessories.contains { accessory in
                 return accessory.uniqueIdentifier == identifier
@@ -253,7 +253,7 @@ class FavoritesManager {
         - returns:  `true` if there exists a characteristic in HomeKit with the given
                     identifier; `false` otherwise.
     */
-    private func characteristicIdentifierExists(identifier: NSUUID) -> Bool {
+    private func characteristicIdentifierExists(_ identifier: UUID) -> Bool {
         return HomeStore.sharedStore.homeManager.homes.contains { home in
             return home.accessories.contains { accessory in
                 return accessory.services.contains { service in
@@ -273,11 +273,11 @@ class FavoritesManager {
         
         - returns:  `true` if the characteristics are localized ordered ascending, `false` otherwise.
     */
-    private func characteristicOrderedBefore(characteristic1: HMCharacteristic, characteristic2: HMCharacteristic) -> Bool {
+    private func characteristicOrderedBefore(_ characteristic1: HMCharacteristic, characteristic2: HMCharacteristic) -> Bool {
         let type1 = characteristic1.localizedCharacteristicType
         let type2 = characteristic2.localizedCharacteristicType
 
-        return type1.localizedCompare(type2) == .OrderedAscending
+        return type1.localizedCompare(type2) == .orderedAscending
     }
 }
 

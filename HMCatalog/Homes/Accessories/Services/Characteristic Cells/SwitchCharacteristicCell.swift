@@ -21,12 +21,12 @@ class SwitchCharacteristicCell: CharacteristicCell {
     override var characteristic: HMCharacteristic! {
         didSet {
             valueSwitch.alpha = enabled ? 1.0 : CharacteristicCell.DisabledAlpha
-            valueSwitch.userInteractionEnabled = enabled
+            valueSwitch.isUserInteractionEnabled = enabled
         }
     }
     
     /// If notify is false, sets the switch to the value.
-    override func setValue(newValue: AnyObject?, notify: Bool) {
+    override func setValue(_ newValue: CellValueType?, notify: Bool) {
         super.setValue(newValue, notify: notify)
         
         if !notify {
@@ -42,8 +42,8 @@ class SwitchCharacteristicCell: CharacteristicCell {
         
         - parameter valueSwitch: The switch that updated.
     */
-    func didChangeSwitchValue(valueSwitch: UISwitch) {
-        setValue(valueSwitch.on, notify: true)
+    func didChangeSwitchValue(_ valueSwitch: UISwitch) {
+        setValue(valueSwitch.isOn as NSNumber?, notify: true)
     }
     
 }

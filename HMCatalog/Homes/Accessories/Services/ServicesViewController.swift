@@ -11,7 +11,7 @@ import HomeKit
 
 /// Represents the sections in the `ServicesViewController`.
 enum AccessoryTableViewSection: Int {
-    case Services, BridgedAccessories
+    case services, bridgedAccessories
 }
 
 /**
@@ -47,17 +47,17 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Reloads the view.
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         updateTitle()
         reloadData()
     }
     
     /// Pops the view controller, if required.
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if shouldPopViewController() {
-            navigationController?.popToRootViewControllerAnimated(true)
+            _ = navigationController?.popToRootViewController(animated: true)
         }
     }
     
@@ -65,13 +65,13 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
         Passes the `CharacteristicsViewController` the service from the cell and
         configures the view controller.
     */
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        super.prepareForSegue(segue, sender: sender)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
         
         guard segue.identifier == Identifiers.showServiceSegue else { return }
         
-        if let indexPath = tableView.indexPathForCell(sender as! UITableViewCell) {
-            let selectedService = displayedServices[indexPath.row]
+        if let indexPath = tableView.indexPath(for: sender as! UITableViewCell) {
+            let selectedService = displayedServices[(indexPath as NSIndexPath).row]
             let characteristicsViewController = segue.intendedDestinationViewController as! CharacteristicsViewController
             characteristicsViewController.showsFavorites = showsFavorites
             characteristicsViewController.allowsAllWrites = allowsAllWrites
@@ -107,7 +107,7 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     // MARK: Table View Methods
     
     /// Two sections if we're showing bridged accessories.
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         if accessory.uniqueIdentifiersForBridgedAccessories != nil {
             return 2
         }
@@ -118,12 +118,12 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
         Section 1 contains the services within the accessory.
         Section 2 contains the bridged accessories.
     */
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch AccessoryTableViewSection(rawValue: section) {
-            case .Services?:
+            case .services?:
                 return displayedServices.count
                 
-            case .BridgedAccessories?:
+            case .bridgedAccessories?:
                 return bridgedAccessories.count
                 
             case nil:
@@ -135,12 +135,12 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
         - returns:  A Service or Bridged Accessory Cell based
                     on the section.
     */
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        switch AccessoryTableViewSection(rawValue: indexPath.section) {
-            case .Services?:
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch AccessoryTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+            case .services?:
                 return self.tableView(tableView, serviceCellForRowAtIndexPath: indexPath)
                 
-            case .BridgedAccessories?:
+            case .bridgedAccessories?:
                 return self.tableView(tableView, bridgedAccessoryCellForRowAtIndexPath: indexPath)
                 
             case nil:
@@ -152,9 +152,9 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
         - returns:  A cell containing the name of a bridged
                     accessory at a given index path.
     */
-    func tableView(tableView: UITableView, bridgedAccessoryCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.accessoryCell, forIndexPath: indexPath)
-        let accessory = bridgedAccessories[indexPath.row]
+    func tableView(_ tableView: UITableView, bridgedAccessoryCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.accessoryCell, for: indexPath)
+        let accessory = bridgedAccessories[(indexPath as NSIndexPath).row]
         cell.textLabel?.text = accessory.name
         return cell
     }
@@ -164,24 +164,24 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
                     a given index path, as well as a localized
                     description of its service type.
     */
-    func tableView(tableView: UITableView, serviceCellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, serviceCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCellWithIdentifier(Identifiers.serviceCell, forIndexPath: indexPath)
-        let service = displayedServices[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.serviceCell, for: indexPath)
+        let service = displayedServices[(indexPath as NSIndexPath).row]
         
         // Inherit the name from the accessory if the Service doesn't have one.
-        cell.textLabel?.text = service.name ?? service.accessory?.name
+        cell.textLabel?.text = service.name
         cell.detailTextLabel?.text = service.localizedDescription
         return cell
     }
     
     /// - returns:  A title string for the section.
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch AccessoryTableViewSection(rawValue: section) {
-            case .Services?:
+            case .services?:
                 return NSLocalizedString("Services", comment: "Services")
                 
-            case .BridgedAccessories?:
+            case .bridgedAccessories?:
                 return NSLocalizedString("Bridged Accessories", comment: "Bridged Accessories")
                 
             case nil:
@@ -190,8 +190,8 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// - returns:  A localized description of the accessories bridged status.
-    override func tableView(tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        if accessory.bridged && AccessoryTableViewSection(rawValue: section)! == .Services {
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        if accessory.isBridged && AccessoryTableViewSection(rawValue: section)! == .services {
             let formatString = NSLocalizedString("This accessory is being bridged into HomeKit by %@.", comment: "Bridge Description")
             if let bridge = home.bridgeForAccessory(accessory) {
                 return String(format: formatString, bridge.name)
@@ -233,27 +233,27 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     // MARK:  HMAccessoryDelegate Methods
     
     /// Reloads the title based on the accessories new name.
-    func accessoryDidUpdateName(accessory: HMAccessory) {
+    func accessoryDidUpdateName(_ accessory: HMAccessory) {
         updateTitle()
     }
     
     /// Reloads the cell for the specified service.
-    func accessory(accessory: HMAccessory, didUpdateNameForService service: HMService) {
-        if let index = displayedServices.indexOf(service) {
-            let path = NSIndexPath(forRow: index, inSection: AccessoryTableViewSection.Services.rawValue)
-            tableView.reloadRowsAtIndexPaths([path], withRowAnimation: .Automatic)
+    func accessory(_ accessory: HMAccessory, didUpdateNameFor service: HMService) {
+        if let index = displayedServices.index(of: service) {
+            let path = IndexPath(row: index, section: AccessoryTableViewSection.services.rawValue)
+            tableView.reloadRows(at: [path], with: .automatic)
         }
     }
     
     /// Reloads the view.
-    func accessoryDidUpdateServices(accessory: HMAccessory) {
+    func accessoryDidUpdateServices(_ accessory: HMAccessory) {
         reloadData()
     }
     
     /// If our accessory has become unreachable, go back the previous view.
-    func accessoryDidUpdateReachability(accessory: HMAccessory) {
+    func accessoryDidUpdateReachability(_ accessory: HMAccessory) {
         if self.accessory == accessory {
-            navigationController?.popViewControllerAnimated(true)
+            _ = navigationController?.popViewController(animated: true)
         }
     }
 }
