@@ -160,8 +160,9 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
     func accessory(_ accessory: HMAccessory, service: HMService, didUpdateValueFor characteristic: HMCharacteristic) {
         if let index = service.characteristics.index(of: characteristic) {
             let indexPath = IndexPath(row: index, section: 0)
-            let cell = tableView.cellForRow(at: indexPath) as! CharacteristicCell
-            cell.setValue(characteristic.value as? CellValueType, notify: false)
+            if let cell = tableView.cellForRow(at: indexPath) as! CharacteristicCell? {
+                cell.setValue(characteristic.value as? CellValueType, notify: false)
+            }
         }
     }
 }
