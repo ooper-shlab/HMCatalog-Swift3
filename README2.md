@@ -25,7 +25,7 @@ You should not contact to Apple or SHLab(jp) about any faults caused by my conve
 
 ### Build
 
-Xcode 8.0 or later/Swift 3; iOS 10 SDK or later
+Xcode 8.3.3; iOS 10 SDK
 
 ### Runtime
 

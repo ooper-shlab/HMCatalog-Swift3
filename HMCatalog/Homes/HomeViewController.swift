@@ -119,7 +119,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
                 triggerVC.trigger = homeKitObject as? HMEventTrigger
                 
             default:
-                print("Received unknown segue identifier: \(segue.identifier).")
+                print("Received unknown segue identifier: \(segue.identifier ?? "nil").")
         }
     }
     
