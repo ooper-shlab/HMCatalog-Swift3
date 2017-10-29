@@ -324,13 +324,13 @@ class TimeConditionViewController: HMCatalogViewController {
                 }
             
             case .sun:
-                let significantEventString = (sunState == .sunrise) ? HMSignificantEventSunrise : HMSignificantEventSunset
+                let significantEventString = (sunState == .sunrise) ? HMSignificantEvent.sunrise : HMSignificantEvent.sunset
                 switch order {
                     case .before:
-                        predicate = HMEventTrigger.predicateForEvaluatingTrigger(occurringBefore: significantEventString, applyingOffset: nil)
+                        predicate = HMEventTrigger.predicateForEvaluatingTrigger(occurringBefore: significantEventString.rawValue, applyingOffset: nil)
                         
                     case .after:
-                        predicate = HMEventTrigger.predicateForEvaluatingTrigger(occurringAfter: significantEventString, applyingOffset: nil)
+                        predicate = HMEventTrigger.predicateForEvaluatingTrigger(occurringAfter: significantEventString.rawValue, applyingOffset: nil)
                         
                     case .at:
                         // Significant events must be specified 'before' or 'after'.

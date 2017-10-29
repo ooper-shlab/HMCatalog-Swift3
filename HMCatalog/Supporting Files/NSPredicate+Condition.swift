@@ -88,28 +88,28 @@ extension NSPredicate {
         guard comparison.rightExpression.arguments?.count == 0 else { return nil }
         
         switch (comparison.leftExpression.keyPath, comparison.predicateOperatorType) {
-            case (HMSignificantEventSunrise, .lessThan):
+            case (HMSignificantEvent.sunrise.rawValue, .lessThan):
                 return .sunTime(.after, .sunrise)
                 
-            case (HMSignificantEventSunrise, .lessThanOrEqualTo):
+            case (HMSignificantEvent.sunrise.rawValue, .lessThanOrEqualTo):
                 return .sunTime(.after, .sunrise)
                 
-            case (HMSignificantEventSunrise, .greaterThan):
+            case (HMSignificantEvent.sunrise.rawValue, .greaterThan):
                 return .sunTime(.before, .sunrise)
                 
-            case (HMSignificantEventSunrise, .greaterThanOrEqualTo):
+            case (HMSignificantEvent.sunrise.rawValue, .greaterThanOrEqualTo):
                 return .sunTime(.before, .sunrise)
                 
-            case (HMSignificantEventSunset, .lessThan):
+            case (HMSignificantEvent.sunset.rawValue, .lessThan):
                 return .sunTime(.after, .sunset)
                 
-            case (HMSignificantEventSunset, .lessThanOrEqualTo):
+            case (HMSignificantEvent.sunset.rawValue, .lessThanOrEqualTo):
                 return .sunTime(.after, .sunset)
                 
-            case (HMSignificantEventSunset, .greaterThan):
+            case (HMSignificantEvent.sunset.rawValue, .greaterThan):
                 return .sunTime(.before, .sunset)
                 
-            case (HMSignificantEventSunset, .greaterThanOrEqualTo):
+            case (HMSignificantEvent.sunset.rawValue, .greaterThanOrEqualTo):
                 return .sunTime(.before, .sunset)
                 
             default:

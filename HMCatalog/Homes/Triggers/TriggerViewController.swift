@@ -137,7 +137,7 @@ class TriggerViewController: HMCatalogViewController {
     // MARK: Helper Methods
     
     /// Enable the trigger if necessary.
-    func enableTrigger(_ trigger: HMTrigger, completion: @escaping (Void) -> Void) {
+    func enableTrigger(_ trigger: HMTrigger, completion: @escaping () -> Void) {
         if trigger.isEnabled == enabledSwitch.isOn {
             completion()
             return

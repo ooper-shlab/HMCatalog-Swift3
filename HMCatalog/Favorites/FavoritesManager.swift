@@ -57,7 +57,7 @@ class FavoritesManager {
     var favoriteCharacteristics: [HMCharacteristic] {
         // Find all of the favorite characteristics.
         let favoriteCharacteristics = HomeStore.sharedStore.homeManager.homes.map { home in
-            return home.allCharacteristics.filter { return $0.isFavorite }
+            return home.allCharacteristics.filter { $0.isFavorite }
         }
         
         // Need to flatten an [[HMCharacteristic]] to an [HMCharacteristic].

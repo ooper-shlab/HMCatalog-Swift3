@@ -129,8 +129,8 @@ class HomeListConfigurationViewController: HomeListViewController {
         else if indexPathIsNone(indexPath) {
             return
         }
-        else if HomeListSection(rawValue: (indexPath as NSIndexPath).section) == .primaryHome {
-            let newPrimaryHome = homes[(indexPath as NSIndexPath).row]
+        else if HomeListSection(rawValue: indexPath.section) == .primaryHome {
+            let newPrimaryHome = homes[indexPath.row]
             updatePrimaryHome(newPrimaryHome)
         }
     }
@@ -176,7 +176,7 @@ class HomeListConfigurationViewController: HomeListViewController {
         - parameter indexPath: The `NSIndexPath` of the home to remove.
     */
     private func removeHomeAtIndexPath(_ indexPath: IndexPath) {
-        let home = homes[(indexPath as NSIndexPath).row]
+        let home = homes[indexPath.row]
 
         // Remove the home from the data structure. If it fails, put it back.
         didRemoveHome(home)
