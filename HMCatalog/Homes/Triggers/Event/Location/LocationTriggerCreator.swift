@@ -46,7 +46,7 @@ class LocationTriggerCreator: EventTriggerCreator, MapViewControllerDelegate {
                 saveTriggerGroup.enter()
                 locationEvent.updateRegion(region) { error in
                     if let error = error {
-                        self.errors.append(error as NSError)
+                        self.errors.append(error)
                     }
                     self.saveTriggerGroup.leave()
                 }

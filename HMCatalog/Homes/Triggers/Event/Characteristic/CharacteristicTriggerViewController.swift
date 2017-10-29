@@ -84,7 +84,7 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
             return self.tableView(tableView, addCellForRowAtIndexPath: indexPath)
         }
         
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .characteristics?:
                 return self.tableView(tableView, conditionCellForRowAtIndexPath: indexPath)
                 
@@ -99,7 +99,7 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
     /// - returns:  A 'condition cell' with the event at the specified index path.
     private func tableView(_ tableView: UITableView, conditionCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.conditionCell, for: indexPath) as! ConditionCell
-        let event = events[(indexPath as NSIndexPath).row]
+        let event = events[indexPath.row]
         cell.setCharacteristic(event.characteristic, targetValue: event.triggerValue!)
         return cell
     }
@@ -109,11 +109,11 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
                     Defaults to super implementation.
     */
     override func tableView(_ tableView: UITableView, addCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .characteristics?:
                 let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.addCell, for: indexPath)
                 cell.textLabel?.text = NSLocalizedString("Add Characteristic…", comment: "Add Characteristic")
-                cell.textLabel?.textColor = UIColor.editableBlueColor()
+                cell.textLabel?.textColor = .editableBlue
                 return cell
                 
             case nil:
@@ -130,7 +130,7 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
     */
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .characteristics?:
                 if indexPathIsAdd(indexPath) {
                     addEvent()
@@ -155,7 +155,7 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
         if indexPathIsAdd(indexPath) {
             return false
         }
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .characteristics?:
                 return true
                 
@@ -173,9 +173,9 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
     */
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            switch sectionForIndex((indexPath as NSIndexPath).section) {
+            switch sectionForIndex(indexPath.section) {
                 case .characteristics?:
-                    characteristicTriggerCreator.removeEvent(events[(indexPath as NSIndexPath).row])
+                    characteristicTriggerCreator.removeEvent(events[indexPath.row])
                     events = characteristicTriggerCreator.events
                     tableView.deleteRows(at: [indexPath], with: .automatic)
                     
@@ -221,9 +221,9 @@ class CharacteristicTriggerViewController: EventTriggerViewController {
     
     /// - returns:  `true` if the section is the Characteristic 'add row'; otherwise defaults to super implementation.
     override func indexPathIsAdd(_ indexPath: IndexPath) -> Bool {
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .characteristics?:
-                return (indexPath as NSIndexPath).row == events.count
+                return indexPath.row == events.count
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")

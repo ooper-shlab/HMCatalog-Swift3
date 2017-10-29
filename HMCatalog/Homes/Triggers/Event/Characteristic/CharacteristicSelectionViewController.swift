@@ -47,7 +47,7 @@ class CharacteristicSelectionViewController: HMCatalogViewController {
         if segue.identifier == Identifiers.showServicesSegue {
             let senderCell = sender as! UITableViewCell
             let servicesVC = segue.intendedDestinationViewController as! ServicesViewController
-            let cellIndex = (tableView.indexPath(for: senderCell)! as NSIndexPath).row
+            let cellIndex = tableView.indexPath(for: senderCell)!.row
             servicesVC.allowsAllWrites = true
             servicesVC.onlyShowsControlServices = true
             servicesVC.accessory = accessories[cellIndex]
@@ -84,7 +84,7 @@ class CharacteristicSelectionViewController: HMCatalogViewController {
     
     /// - returns:  An Accessory cell that contains an accessory's name.
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let accessory = accessories.sortByLocalizedName()[(indexPath as NSIndexPath).row]
+        let accessory = accessories.sortByLocalizedName()[indexPath.row]
         let cellIdentifier = accessory.isReachable ? Identifiers.accessoryCell : Identifiers.unreachableAccessoryCell
         
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)

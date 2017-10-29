@@ -76,7 +76,7 @@ class ZoneViewController: HMCatalogViewController {
                     an 'add' cell, `false` otherwise
     */
     private func indexPathIsAdd(_ indexPath: IndexPath) -> Bool {
-        return (indexPath as NSIndexPath).row == (addIndexPath as NSIndexPath).row
+        return indexPath.row == addIndexPath.row
     }
     
     /**
@@ -189,7 +189,7 @@ class ZoneViewController: HMCatalogViewController {
 
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.roomCell, for: indexPath)
         
-        cell.textLabel?.text = rooms[(indexPath as NSIndexPath).row].name
+        cell.textLabel?.text = rooms[indexPath.row].name
         
         return cell
     }
@@ -205,7 +205,7 @@ class ZoneViewController: HMCatalogViewController {
     /// Deletes the room at the provided index path.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let room = rooms[(indexPath as NSIndexPath).row]
+            let room = rooms[indexPath.row]
 
             removeRoom(room)
         }

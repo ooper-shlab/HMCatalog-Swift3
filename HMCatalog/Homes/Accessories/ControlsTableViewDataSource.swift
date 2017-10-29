@@ -99,8 +99,8 @@ class ControlsTableViewDataSource: NSObject, UITableViewDataSource {
     func serviceForIndexPath(_ indexPath: IndexPath) -> HMService? {
         if let sortedKeys = sortedKeys,
                let serviceTable = serviceTable,
-                let services = serviceTable[sortedKeys[(indexPath as NSIndexPath).section]] {
-            return services[(indexPath as NSIndexPath).row]
+                let services = serviceTable[sortedKeys[indexPath.section]] {
+            return services[indexPath.row]
         }
 
         return nil

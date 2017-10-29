@@ -227,7 +227,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
         else {
             action = NSLocalizedString("Add %@", comment: "Add Accessory")
         }
-        navigationItem.title = NSString(format: action as NSString, accessory.name) as String
+        navigationItem.title = String(format: action, accessory.name) as String
         nameField.text = accessory.name
         nameField.isEnabled = home.isAdmin
         enableAddButtonIfApplicable()
@@ -271,7 +271,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
     
     /// - returns:  `UITableViewAutomaticDimension` for dynamic cell, super otherwise.
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        switch AddAccessoryTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+        switch AddAccessoryTableViewSection(rawValue: indexPath.section) {
             case .rooms?:
                 return UITableViewAutomaticDimension
                 
@@ -285,7 +285,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
     
     /// - returns:  A 'room cell' for the rooms section, super otherwise.
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch AddAccessoryTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+        switch AddAccessoryTableViewSection(rawValue: indexPath.section) {
             case .rooms?:
                 return self.tableView(tableView, roomCellForRowAtIndexPath: indexPath)
                 
@@ -303,7 +303,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
     */
     func tableView(_ tableView: UITableView, roomCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.roomCell, for: indexPath)
-        let room = home.allRooms[(indexPath as NSIndexPath).row] as HMRoom
+        let room = home.allRooms[indexPath.row] as HMRoom
         
         cell.textLabel?.text = home.nameForRoom(room)
         
@@ -319,11 +319,11 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
     /// Handles row selection based on the section.
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        switch AddAccessoryTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+        switch AddAccessoryTableViewSection(rawValue: indexPath.section) {
             case .rooms?:
                 guard home.isAdmin else { return }
 
-                selectedRoom = home.allRooms[(indexPath as NSIndexPath).row]
+                selectedRoom = home.allRooms[indexPath.row]
 
                 let sections = IndexSet(integer: AddAccessoryTableViewSection.rooms.rawValue)
                 
@@ -341,7 +341,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
     
     /// Required override.
     override func tableView(_ tableView: UITableView, indentationLevelForRowAt indexPath: IndexPath) -> Int {
-        return super.tableView(tableView, indentationLevelForRowAt: IndexPath(row: 0, section: (indexPath as NSIndexPath).section))
+        return super.tableView(tableView, indentationLevelForRowAt: IndexPath(row: 0, section: indexPath.section))
     }
     
     // MARK: HMHomeDelegate Methods

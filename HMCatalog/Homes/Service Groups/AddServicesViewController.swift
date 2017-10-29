@@ -126,9 +126,9 @@ class AddServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
         - returns:  The `HMService` at the given index path.
     */
     private func serviceAtIndexPath(_ indexPath: IndexPath) -> HMService {
-        let accessory = displayedAccessories[(indexPath as NSIndexPath).section]
+        let accessory = displayedAccessories[indexPath.section]
         let services = displayedServicesForAccessory[accessory]!
-        return services[(indexPath as NSIndexPath).row]
+        return services[indexPath.row]
     }
     
     /**

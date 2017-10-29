@@ -50,7 +50,7 @@ class AccessoryUpdateController: NSObject, CharacteristicCellDelegate {
                 }
 
                 DispatchQueue.main.async {
-                    completion(characteristic.value as? CellValueType, error as NSError?)
+                    completion(characteristic.value as? CellValueType, error)
                 }
             }
         }
@@ -58,7 +58,7 @@ class AccessoryUpdateController: NSObject, CharacteristicCellDelegate {
 
     /// Creates and starts the update value timer.
     func startListeningForCellUpdates() {
-        updateValueTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(AccessoryUpdateController.updateCharacteristics), userInfo: nil, repeats: true)
+        updateValueTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(self.updateCharacteristics), userInfo: nil, repeats: true)
     }
     
     /// Invalidates the update timer.
@@ -67,7 +67,7 @@ class AccessoryUpdateController: NSObject, CharacteristicCellDelegate {
     }
     
     /// Sends all pending requests in the array.
-    func updateCharacteristics() {
+    @objc func updateCharacteristics() {
         updateQueue.sync {
             for (characteristic, value) in self.pendingWrites {
                 self.sentWrites[characteristic] = value

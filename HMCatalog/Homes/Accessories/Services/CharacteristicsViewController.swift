@@ -79,9 +79,9 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
     // MARK: Table View Methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch CharacteristicTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+        switch CharacteristicTableViewSection(rawValue: indexPath.section) {
             case .characteristics?:
-                let characteristic = service.characteristics[(indexPath as NSIndexPath).row]
+                let characteristic = service.characteristics[indexPath.row]
                 didSelectCharacteristic(characteristic, atIndexPath: indexPath)
                 
             case .associatedServiceType?:
@@ -115,8 +115,8 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
     private func didSelectAssociatedServiceTypeAtIndexPath(_ indexPath: IndexPath) {
         let serviceTypes = HMService.validAssociatedServiceTypes
         var newServiceType: String?
-        if (indexPath as NSIndexPath).row < serviceTypes.count {
-            newServiceType = serviceTypes[(indexPath as NSIndexPath).row]
+        if indexPath.row < serviceTypes.count {
+            newServiceType = serviceTypes[indexPath.row]
         }
         service.updateAssociatedServiceType(newServiceType) { error in
             if let error = error {

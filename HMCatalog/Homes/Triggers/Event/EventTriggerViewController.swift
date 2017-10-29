@@ -79,7 +79,7 @@ class EventTriggerViewController: TriggerViewController {
     */
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .conditions?:
                 if indexPathIsAdd(indexPath) {
                     addCondition()
@@ -102,7 +102,7 @@ class EventTriggerViewController: TriggerViewController {
             return self.tableView(tableView, addCellForRowAtIndexPath: indexPath)
         }
         
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .conditions?:
                 return self.tableView(tableView, conditionCellForRowAtIndexPath: indexPath)
                 
@@ -123,7 +123,7 @@ class EventTriggerViewController: TriggerViewController {
             return false
         }
         
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .conditions?:
                 return true
                 
@@ -138,7 +138,7 @@ class EventTriggerViewController: TriggerViewController {
     /// Remove the selected condition from the trigger creator.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let predicate = eventTriggerCreator.conditions[(indexPath as NSIndexPath).row]
+            let predicate = eventTriggerCreator.conditions[indexPath.row]
             eventTriggerCreator.removeCondition(predicate)
             tableView.deleteRows(at: [indexPath], with: .automatic)
         }
@@ -148,7 +148,7 @@ class EventTriggerViewController: TriggerViewController {
     func tableView(_ tableView: UITableView, addCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.addCell, for: indexPath)
         let cellText: String
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .conditions?:
                 cellText = NSLocalizedString("Add Condition…", comment: "Add Condition")
                 
@@ -160,7 +160,7 @@ class EventTriggerViewController: TriggerViewController {
         }
 
         cell.textLabel?.text = cellText
-        cell.textLabel?.textColor = UIColor.editableBlueColor()
+        cell.textLabel?.textColor = .editableBlue
      
         return cell
     }
@@ -184,7 +184,7 @@ class EventTriggerViewController: TriggerViewController {
     /// - returns:  A 'condition cell', which displays information about the condition.
     private func tableView(_ tableView: UITableView, conditionCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.conditionCell) as! ConditionCell
-        let condition = eventTriggerCreator.conditions[(indexPath as NSIndexPath).row]
+        let condition = eventTriggerCreator.conditions[indexPath.row]
 
         switch condition.homeKitConditionType {
             case .characteristic(let characteristic, let value):
@@ -236,9 +236,9 @@ class EventTriggerViewController: TriggerViewController {
     
     /// - returns:  `true` if the index path is the 'add row'; `false` otherwise.
     func indexPathIsAdd(_ indexPath: IndexPath) -> Bool {
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .conditions?:
-                return (indexPath as NSIndexPath).row == eventTriggerCreator.conditions.count
+                return indexPath.row == eventTriggerCreator.conditions.count
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")

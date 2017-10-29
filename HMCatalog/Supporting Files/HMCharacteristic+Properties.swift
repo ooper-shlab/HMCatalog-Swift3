@@ -314,12 +314,12 @@ extension HMCharacteristic {
     var localizedCharacteristicType: String {
         var type = self.localizedDescription
         
-        var localizedDescription: NSString? = nil
+        var localizedDescription: String? = nil
         if isReadOnly {
-            localizedDescription = NSLocalizedString("Read Only", comment: "Read Only") as NSString?
+            localizedDescription = NSLocalizedString("Read Only", comment: "Read Only")
         }
         else if isWriteOnly {
-            localizedDescription = NSLocalizedString("Write Only", comment: "Write Only") as NSString?
+            localizedDescription = NSLocalizedString("Write Only", comment: "Write Only")
         }
         
         if let localizedDescription = localizedDescription {

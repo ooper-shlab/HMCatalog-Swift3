@@ -99,7 +99,7 @@ class ActionSetViewController: HMCatalogViewController {
             servicesViewController.onlyShowsControlServices = true
             servicesViewController.cellDelegate = actionSetCreator
 
-            let index = (tableView.indexPath(for: sender as! UITableViewCell)! as NSIndexPath).row
+            let index = tableView.indexPath(for: sender as! UITableViewCell)!.row
             
             servicesViewController.accessory = displayedAccessories[index]
             servicesViewController.cellDelegate = actionSetCreator
@@ -117,7 +117,7 @@ class ActionSetViewController: HMCatalogViewController {
     @IBAction func saveAndDismiss() {
         saveButton.isEnabled = false
 
-        actionSetCreator.saveActionSetWithName(trimmedName as NSString) { error in
+        actionSetCreator.saveActionSetWithName(trimmedName) { error in
             self.saveButton.isEnabled = true
         
             if let error = error {
@@ -168,13 +168,13 @@ class ActionSetViewController: HMCatalogViewController {
         for the first row.
     */
     override func tableView(_ tableView: UITableView, indentationLevelForRowAt indexPath: IndexPath) -> Int {
-        return super.tableView(tableView, indentationLevelForRowAt: IndexPath(row: 0, section: (indexPath as NSIndexPath).section))
+        return super.tableView(tableView, indentationLevelForRowAt: IndexPath(row: 0, section: indexPath.section))
     }
     
     /// Removes the action associated with the index path.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let characteristic = actionSetCreator.allCharacteristics[(indexPath as NSIndexPath).row]
+            let characteristic = actionSetCreator.allCharacteristics[indexPath.row]
             actionSetCreator.removeTargetValueForCharacteristic(characteristic) {
                 if self.actionSetCreator.containsActions {
                     tableView.deleteRows(at: [indexPath], with: .automatic)
@@ -188,12 +188,12 @@ class ActionSetViewController: HMCatalogViewController {
     
     /// - returns:  `true` for the Actions section; `false` otherwise.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return ActionSetTableViewSection(rawValue: (indexPath as NSIndexPath).section) == .actions && home.isAdmin
+        return ActionSetTableViewSection(rawValue: indexPath.section) == .actions && home.isAdmin
     }
     
     /// - returns:  `UITableViewAutomaticDimension` for dynamic sections, otherwise the superclass's implementation.
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        switch ActionSetTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+        switch ActionSetTableViewSection(rawValue: indexPath.section) {
             case .name?:
                 return super.tableView(tableView, heightForRowAt: indexPath)
                 
@@ -207,7 +207,7 @@ class ActionSetViewController: HMCatalogViewController {
     
     /// - returns:  An action cell for the actions section, an accessory cell for the accessory section, or the superclass's implementation.
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch ActionSetTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+        switch ActionSetTableViewSection(rawValue: indexPath.section) {
             case .name?:
                 return super.tableView(tableView, cellForRowAt: indexPath)
                 
@@ -254,7 +254,7 @@ class ActionSetViewController: HMCatalogViewController {
     /// - returns:  An `ActionCell` instance with the target value for the characteristic at the specified index path.
     private func tableView(_ tableView: UITableView, actionCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.actionCell, for: indexPath) as! ActionCell
-        let characteristic = actionSetCreator.allCharacteristics[(indexPath as NSIndexPath).row] as HMCharacteristic
+        let characteristic = actionSetCreator.allCharacteristics[indexPath.row] as HMCharacteristic
 
         if let target = actionSetCreator.targetValueForCharacteristic(characteristic) {
             cell.setCharacteristic(characteristic, targetValue: target)
@@ -273,7 +273,7 @@ class ActionSetViewController: HMCatalogViewController {
             are just for reference.
         */
         
-        let accessory = displayedAccessories[(indexPath as NSIndexPath).row]
+        let accessory = displayedAccessories[indexPath.row]
         let cellIdentifier = accessory.isReachable ? Identifiers.accessoryCell : Identifiers.unreachableAccessoryCell
         
         let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
@@ -300,7 +300,7 @@ class ActionSetViewController: HMCatalogViewController {
             return
         }
 
-        if ActionSetTableViewSection(rawValue: (indexPath as NSIndexPath).section) == .accessories {
+        if ActionSetTableViewSection(rawValue: indexPath.section) == .accessories {
             performSegue(withIdentifier: Identifiers.showServiceSegue, sender: cell)
         }
     }

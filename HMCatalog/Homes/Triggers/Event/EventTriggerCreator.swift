@@ -93,7 +93,7 @@ class EventTriggerCreator: TriggerCreator, CharacteristicCellDelegate {
                 completion(value, nil)
             }
             else {
-                completion(characteristic.value as? CellValueType, error as NSError?)
+                completion(characteristic.value as? CellValueType, error)
             }
         }
     }
@@ -109,7 +109,7 @@ class EventTriggerCreator: TriggerCreator, CharacteristicCellDelegate {
         saveTriggerGroup.enter()
         eventTrigger?.updatePredicate(newPredicate()) { error in
             if let error = error {
-                self.errors.append(error as NSError)
+                self.errors.append(error)
             }
             self.saveTriggerGroup.leave()
         }

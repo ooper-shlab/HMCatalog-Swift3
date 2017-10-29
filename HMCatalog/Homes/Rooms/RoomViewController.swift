@@ -66,13 +66,13 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     /// Assigns the 'deleted' room to the home's roomForEntireHome.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            unassignAccessory(accessories[(indexPath as NSIndexPath).row])
+            unassignAccessory(accessories[indexPath.row])
         }
     }
     
     /// - returns:  A cell representing an accessory.
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let accessory = accessories[(indexPath as NSIndexPath).row]
+        let accessory = accessories[indexPath.row]
 
         var reuseIdentifier = Identifiers.accessoryCell
         
@@ -126,7 +126,7 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
         let indexPath = tableView.indexPath(for: sender as! UITableViewCell)!
         if segue.identifier == Identifiers.modifyAccessorySegue {
             let modifyViewController = segue.intendedDestinationViewController as! ModifyAccessoryViewController
-            modifyViewController.accessory = room.accessories[(indexPath as NSIndexPath).row]
+            modifyViewController.accessory = room.accessories[indexPath.row]
         }
     }
     

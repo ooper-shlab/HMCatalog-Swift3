@@ -36,7 +36,7 @@ class ActionSetCreator: CharacteristicCellDelegate {
         - parameter name:              The new name for the action set.
         - parameter completionHandler: A closure to call once the action set has been completely saved.
     */
-    func saveActionSetWithName(_ name: NSString, completionHandler: @escaping (_ error: Error?) -> Void) {
+    func saveActionSetWithName(_ name: String, completionHandler: @escaping (_ error: Error?) -> Void) {
         if let actionSet = actionSet {
             saveActionSet(actionSet)
             updateNameIfNecessary(name)
@@ -74,15 +74,15 @@ class ActionSetCreator: CharacteristicCellDelegate {
         
         - parameter name: The new name for the action set.
     */
-    func updateNameIfNecessary(_ name: NSString) {
-        if (actionSet?.name)! == name as String {
+    func updateNameIfNecessary(_ name: String) {
+        if actionSet?.name == name {
             return
         }
         saveActionSetGroup.enter()
-        actionSet?.updateName(name as String) { error in
+        actionSet?.updateName(name) { error in
             if let error = error {
                 print("HomeKit: Error updating name: \(error.localizedDescription)")
-                self.saveError = error as NSError?
+                self.saveError = error
             }
             self.saveActionSetGroup.leave()
         }
@@ -93,12 +93,12 @@ class ActionSetCreator: CharacteristicCellDelegate {
         
         - parameter name: The name for the new action set.
     */
-    func createActionSetWithName(_ name: NSString) {
+    func createActionSetWithName(_ name: String) {
         saveActionSetGroup.enter()
-        home.addActionSet(withName: name as String) { actionSet, error in
+        home.addActionSet(withName: name) { actionSet, error in
             if let error = error {
                 print("HomeKit: Error creating action set: \(error.localizedDescription)")
-                self.saveError = error as NSError?
+                self.saveError = error
             }
             else {
                 // There is no error, so the action set has a value.
@@ -288,7 +288,7 @@ class ActionSetCreator: CharacteristicCellDelegate {
                 completion(value, nil)
             }
             else {
-                completion(characteristic.value as? CellValueType, error as NSError?)
+                completion(characteristic.value as? CellValueType, error)
             }
         }
     }

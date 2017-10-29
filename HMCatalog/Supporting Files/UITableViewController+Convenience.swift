@@ -23,8 +23,8 @@ extension UITableViewController {
             let messageLabel = UILabel()
             
             messageLabel.text = message
-            messageLabel.font = UIFont.preferredFont(forTextStyle: UIFontTextStyle.body)
-            messageLabel.textColor = UIColor.lightGray
+            messageLabel.font = .preferredFont(forTextStyle: UIFontTextStyle.body)
+            messageLabel.textColor = .lightGray
             messageLabel.textAlignment = .center
             messageLabel.sizeToFit()
             

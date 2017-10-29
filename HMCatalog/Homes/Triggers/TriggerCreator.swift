@@ -58,7 +58,7 @@ class TriggerCreator {
             saveTriggerGroup.enter()
             home.addTrigger(trigger!) { error in
                 if let error = error {
-                    self.errors.append(error as NSError)
+                    self.errors.append(error)
                 }
                 else {
                     self.configureWithActionSets(actionSets)
@@ -118,7 +118,7 @@ class TriggerCreator {
             Save a standard completion handler to use when we either add or remove 
             an action set.
         */
-        let defaultCompletion: (NSError?) -> Void = { error in
+        let defaultCompletion: (Error?) -> Void = { error in
             // Leave the dispatch group, to notify that we've finished this task.
             if let error = error {
                 self.errors.append(error)
@@ -132,7 +132,7 @@ class TriggerCreator {
                 continue
             }
             saveTriggerGroup.enter()
-            trigger.removeActionSet(actionSet, completionHandler: defaultCompletion as! (Error?) -> Void)
+            trigger.removeActionSet(actionSet, completionHandler: defaultCompletion)
         }
         
         // Second pass, add the new action sets that were just selected.
@@ -141,7 +141,7 @@ class TriggerCreator {
                 continue
             }
             saveTriggerGroup.enter()
-            trigger.addActionSet(actionSet, completionHandler: defaultCompletion as! (Error?) -> Void)
+            trigger.addActionSet(actionSet, completionHandler: defaultCompletion)
         }
     }
     
@@ -153,7 +153,7 @@ class TriggerCreator {
         saveTriggerGroup.enter()
         trigger?.updateName(name) { error in
             if let error = error {
-                self.errors.append(error as NSError)
+                self.errors.append(error)
             }
             self.saveTriggerGroup.leave()
         }

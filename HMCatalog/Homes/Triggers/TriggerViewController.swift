@@ -174,7 +174,7 @@ class TriggerViewController: HMCatalogViewController {
     /// Creates a cell that represents either a selected or unselected action set cell.
     private func tableView(_ tableView: UITableView, actionSetCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.actionSetCell, for: indexPath)
-        let actionSet = actionSets[(indexPath as NSIndexPath).row]
+        let actionSet = actionSets[indexPath.row]
 
         if selectedActionSets.contains(actionSet)  {
             cell.accessoryType = .checkmark
@@ -200,7 +200,7 @@ class TriggerViewController: HMCatalogViewController {
     
     /// Only handles the ActionSets case, defaults to super.
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if sectionForIndex((indexPath as NSIndexPath).section) == .actionSets {
+        if sectionForIndex(indexPath.section) == .actionSets {
             return self.tableView(tableView, actionSetCellForRowAtIndexPath: indexPath)
         }
 
@@ -216,7 +216,7 @@ class TriggerViewController: HMCatalogViewController {
                     instead of the provided row.
     */
     override func tableView(_ tableView: UITableView, indentationLevelForRowAt indexPath: IndexPath) -> Int {
-        let newIndexPath = IndexPath(row: 0, section: (indexPath as NSIndexPath).section)
+        let newIndexPath = IndexPath(row: 0, section: indexPath.section)
 
         return super.tableView(tableView, indentationLevelForRowAt: newIndexPath)
     }
@@ -226,7 +226,7 @@ class TriggerViewController: HMCatalogViewController {
         static sizing for the static cells.
     */
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .name?, .enabled?:
                 return super.tableView(tableView, heightForRowAt: indexPath)
                 
@@ -241,7 +241,7 @@ class TriggerViewController: HMCatalogViewController {
     /// Handles row selction for action sets, defaults to super implementation.
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        if sectionForIndex((indexPath as NSIndexPath).section) == .actionSets {
+        if sectionForIndex(indexPath.section) == .actionSets {
             self.tableView(tableView, didSelectActionSetAtIndexPath: indexPath)
         }
     }
@@ -271,7 +271,7 @@ class TriggerViewController: HMCatalogViewController {
         then remove it from the selected list. Otherwise, add it to the selected list.
     */
     func tableView(_ tableView: UITableView, didSelectActionSetAtIndexPath indexPath: IndexPath) {
-        let actionSet = actionSets[(indexPath as NSIndexPath).row]
+        let actionSet = actionSets[indexPath.row]
         if let index = selectedActionSets.index(of: actionSet) {
             selectedActionSets.remove(at: index)
         }

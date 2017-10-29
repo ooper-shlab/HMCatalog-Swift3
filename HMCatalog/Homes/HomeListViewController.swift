@@ -69,7 +69,7 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
             }
 
             if let indexPath = tableView.indexPath(for: sender as! UITableViewCell) {
-                homeStore.home = homes[(indexPath as NSIndexPath).row]
+                homeStore.home = homes[indexPath.row]
             }
         }
     }
@@ -102,7 +102,7 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
     */
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.homeCell, for: indexPath)
-        let home = homes[(indexPath as NSIndexPath).row]
+        let home = homes[indexPath.row]
         
         cell.textLabel?.text = home.name
         cell.detailTextLabel?.text = sharedTextForHome(home)

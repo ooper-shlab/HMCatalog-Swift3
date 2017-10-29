@@ -167,7 +167,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         - returns:  The `HomeCellType` for cell.
     */
     private func cellTypeForIndexPath(_ indexPath: IndexPath) -> HomeCellType {
-        guard let section = HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) else { return .none }
+        guard let section = HomeKitObjectSection(rawValue: indexPath.section) else { return .none }
         
         let objectCount = objectCollection.objectsForSection(section).count
 
@@ -175,7 +175,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
             // No objects -- this is either an 'Add Row' or a 'None Row'.
             return home.isAdmin ? .add : .none
         }
-        else if (indexPath as NSIndexPath).row == objectCount {
+        else if indexPath.row == objectCount {
             return .add
         }
         else {
@@ -223,8 +223,8 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
             return nil
         }
         
-        if let section = HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) {
-            return objectCollection.objectsForSection(section)[(indexPath as NSIndexPath).row]
+        if let section = HomeKitObjectSection(rawValue: indexPath.section) {
+            return objectCollection.objectsForSection(section)[indexPath.row]
         }
         
         return nil
@@ -387,7 +387,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     private func tableView(_ tableView: UITableView, noneCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.disabledAddCell, for: indexPath)
 
-        let section = HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section)!
+        let section = HomeKitObjectSection(rawValue: indexPath.section)!
         
         cell.textLabel!.text = titleForNoneRowInSection(section)
         
@@ -403,7 +403,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     private func tableView(_ tableView: UITableView, addCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         var reuseIdentifier = Identifiers.addCell
 
-        let section = HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section)
+        let section = HomeKitObjectSection(rawValue: indexPath.section)
 
         if (!canAddActionSet && section == .actionSet) ||
             (!canAddTrigger && section == .trigger) || !home.isAdmin {
@@ -425,7 +425,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         - returns:  The cell reuse identifier.
     */
     private func reuseIdentifierForIndexPath(_ indexPath: IndexPath) -> String {
-        switch HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) {
+        switch HomeKitObjectSection(rawValue: indexPath.section) {
             case .accessory?:
                 let accessory = homeKitObjectAtIndexPath(indexPath) as! HMAccessory
                 return accessory.isReachable ? Identifiers.accessoryCell : Identifiers.unreachableAccessoryCell
@@ -460,7 +460,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         
         // Get the name of the object.
         let name: String
-        switch HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) {
+        switch HomeKitObjectSection(rawValue: indexPath.section) {
             case .accessory?:
                 let accessory = homeKitObject as! HMAccessory
                 name = accessory.name
@@ -541,7 +541,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
 
         guard cell.selectionStyle != .none else { return }
         
-        guard let section = HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) else {
+        guard let section = HomeKitObjectSection(rawValue: indexPath.section) else {
             fatalError("Unexpected `HomeKitObjectSection` raw value.")
         }
         
@@ -579,7 +579,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     override func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
         let cell = tableView.cellForRow(at: indexPath)
 
-        if HomeKitObjectSection(rawValue: (indexPath as NSIndexPath).section) == .trigger {
+        if HomeKitObjectSection(rawValue: indexPath.section) == .trigger {
             let trigger = homeKitObjectAtIndexPath(indexPath)
 
             switch trigger {
@@ -677,28 +677,28 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         - parameter object: The HomeKit object to remove.
         - parameter completionHandler: The closure to invote when the removal has been completed.
     */
-    private func removeHomeKitObject(_ object: AnyObject, completionHandler: @escaping (NSError?) -> Void) {
+    private func removeHomeKitObject(_ object: AnyObject, completionHandler: @escaping (Error?) -> Void) {
         switch object {
             case let actionSet as HMActionSet:
                 home.removeActionSet(actionSet) { error in
-                    completionHandler(error as NSError?)
+                    completionHandler(error)
                     self.updateActionSetSection()
                 }
                 
             case let accessory as HMAccessory:
-                home.removeAccessory(accessory, completionHandler: completionHandler as! (Error?) -> Void)
+                home.removeAccessory(accessory, completionHandler: completionHandler)
                 
             case let room as HMRoom:
-                home.removeRoom(room, completionHandler: completionHandler as! (Error?) -> Void)
+                home.removeRoom(room, completionHandler: completionHandler)
                 
             case let zone as HMZone:
-                home.removeZone(zone, completionHandler: completionHandler as! (Error?) -> Void)
+                home.removeZone(zone, completionHandler: completionHandler)
                 
             case let trigger as HMTrigger:
-                home.removeTrigger(trigger, completionHandler: completionHandler as! (Error?) -> Void)
+                home.removeTrigger(trigger, completionHandler: completionHandler)
                 
             case let serviceGroup as HMServiceGroup:
-                home.removeServiceGroup(serviceGroup, completionHandler: completionHandler as! (Error?) -> Void)
+                home.removeServiceGroup(serviceGroup, completionHandler: completionHandler)
                 
             default:
                 fatalError("Attempted to remove unknown HomeKit object.")

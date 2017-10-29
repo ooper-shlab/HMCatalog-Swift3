@@ -133,9 +133,9 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
         given index path and configures the cell based on view configurations.
     */
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let characteristics = FavoritesManager.sharedManager.favoriteCharacteristicsForAccessory(favoriteAccessories[(indexPath as NSIndexPath).section])
+        let characteristics = FavoritesManager.sharedManager.favoriteCharacteristicsForAccessory(favoriteAccessories[indexPath.section])
         
-        let characteristic = characteristics[(indexPath as NSIndexPath).row]
+        let characteristic = characteristics[indexPath.row]
         
         var reuseIdentifier = Identifiers.characteristicCell
 

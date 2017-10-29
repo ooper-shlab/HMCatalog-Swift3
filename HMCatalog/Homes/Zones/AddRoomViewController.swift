@@ -70,7 +70,7 @@ class AddRoomViewController: HMCatalogViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.roomCell, for: indexPath)
         
-        let room = displayedRooms[(indexPath as NSIndexPath).row]
+        let room = displayedRooms[indexPath.row]
 
         cell.textLabel?.text = room.name
         cell.accessoryType = selectedRooms.contains(room)  ? .checkmark : .none
@@ -80,7 +80,7 @@ class AddRoomViewController: HMCatalogViewController {
     
     /// Adds the selected room to the selected rooms array and reloads that cell
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let room = displayedRooms[(indexPath as NSIndexPath).row]
+        let room = displayedRooms[indexPath.row]
 
         if let index = selectedRooms.index(of: room) {
             selectedRooms.remove(at: index)

@@ -247,7 +247,7 @@ class CharacteristicTriggerCreator: EventTriggerCreator {
                 completion(value, nil)
             }
             else {
-                completion(characteristic.value as? CellValueType, error as NSError?)
+                completion(characteristic.value as? CellValueType, error)
             }
         }
     }

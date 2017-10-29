@@ -65,7 +65,7 @@ class HomeListConfigurationViewController: HomeListViewController {
         
         let reuseIdentifier: String
 
-        switch HomeListSection(rawValue: (indexPath as NSIndexPath).section) {
+        switch HomeListSection(rawValue: indexPath.section) {
             case .homes?:
                 reuseIdentifier = Identifiers.homeCell
 
@@ -76,13 +76,13 @@ class HomeListConfigurationViewController: HomeListViewController {
         }
         
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
-        let home = homes[(indexPath as NSIndexPath).row]
+        let home = homes[indexPath.row]
         
         cell.textLabel!.text = home.name
         cell.detailTextLabel?.text = sharedTextForHome(home)
         
         // Mark the primary home with checkmark.
-        if HomeListSection(rawValue: (indexPath as NSIndexPath).section) == .primaryHome {
+        if HomeListSection(rawValue: indexPath.section) == .primaryHome {
             if home == homeManager.primaryHome {
                 cell.accessoryType = .checkmark
             }
@@ -96,7 +96,7 @@ class HomeListConfigurationViewController: HomeListViewController {
     
     /// Homes in the list section can be deleted. The add row cannot be deleted.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return HomeListSection(rawValue: (indexPath as NSIndexPath).section) == .homes && !indexPathIsAdd(indexPath)
+        return HomeListSection(rawValue: indexPath.section) == .homes && !indexPathIsAdd(indexPath)
     }
     
     /// Only the 'primary home' section has a title.
@@ -271,13 +271,13 @@ class HomeListConfigurationViewController: HomeListViewController {
 
     /// - returns:  `true` if the index path is the 'add row'; `false` otherwise.
     private func indexPathIsAdd(_ indexPath: IndexPath) -> Bool {
-        return HomeListSection(rawValue: (indexPath as NSIndexPath).section) == .homes &&
-            (indexPath as NSIndexPath).row == homes.count
+        return HomeListSection(rawValue: indexPath.section) == .homes &&
+            indexPath.row == homes.count
     }
     
     /// - returns:  `true` if the index path is the 'No Homes' cell; `false` otherwise.
     private func indexPathIsNone(_ indexPath: IndexPath) -> Bool {
-        return HomeListSection(rawValue: (indexPath as NSIndexPath).section) == .primaryHome && homes.isEmpty
+        return HomeListSection(rawValue: indexPath.section) == .primaryHome && homes.isEmpty
     }
     
     // MARK: HMHomeDelegate Methods

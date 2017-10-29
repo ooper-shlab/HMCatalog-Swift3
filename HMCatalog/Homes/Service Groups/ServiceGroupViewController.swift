@@ -130,9 +130,9 @@ class ServiceGroupViewController: HMCatalogViewController, HMAccessoryDelegate {
         - returns: The service at the given index path
     */
     private func serviceAtIndexPath(_ indexPath: IndexPath) -> HMService {
-        let accessory = accessories[(indexPath as NSIndexPath).section]
+        let accessory = accessories[indexPath.section]
         let services = servicesForAccessory[accessory]!
-        return services[(indexPath as NSIndexPath).row]
+        return services[indexPath.row]
     }
     
     /// Passes the service group into the `AddServicesViewController`

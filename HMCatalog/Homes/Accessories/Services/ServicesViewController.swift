@@ -71,7 +71,7 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
         guard segue.identifier == Identifiers.showServiceSegue else { return }
         
         if let indexPath = tableView.indexPath(for: sender as! UITableViewCell) {
-            let selectedService = displayedServices[(indexPath as NSIndexPath).row]
+            let selectedService = displayedServices[indexPath.row]
             let characteristicsViewController = segue.intendedDestinationViewController as! CharacteristicsViewController
             characteristicsViewController.showsFavorites = showsFavorites
             characteristicsViewController.allowsAllWrites = allowsAllWrites
@@ -136,7 +136,7 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
                     on the section.
     */
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch AccessoryTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+        switch AccessoryTableViewSection(rawValue: indexPath.section) {
             case .services?:
                 return self.tableView(tableView, serviceCellForRowAtIndexPath: indexPath)
                 
@@ -154,7 +154,7 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     */
     func tableView(_ tableView: UITableView, bridgedAccessoryCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.accessoryCell, for: indexPath)
-        let accessory = bridgedAccessories[(indexPath as NSIndexPath).row]
+        let accessory = bridgedAccessories[indexPath.row]
         cell.textLabel?.text = accessory.name
         return cell
     }
@@ -167,7 +167,7 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     func tableView(_ tableView: UITableView, serviceCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.serviceCell, for: indexPath)
-        let service = displayedServices[(indexPath as NSIndexPath).row]
+        let service = displayedServices[indexPath.row]
         
         // Inherit the name from the accessory if the Service doesn't have one.
         cell.textLabel?.text = service.name

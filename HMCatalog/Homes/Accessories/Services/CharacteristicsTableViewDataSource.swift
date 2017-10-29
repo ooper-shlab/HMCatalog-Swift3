@@ -136,8 +136,8 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
     private func tableView(_ tableView: UITableView, associatedServiceTypeCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.serviceTypeCell, for: indexPath)
         
-        cell.textLabel?.text = displayedServiceTypeForRow((indexPath as NSIndexPath).row)
-        cell.accessoryType = serviceTypeIsSelectedForRow((indexPath as NSIndexPath).row) ? .checkmark : .none
+        cell.textLabel?.text = displayedServiceTypeForRow(indexPath.row)
+        cell.accessoryType = serviceTypeIsSelectedForRow(indexPath.row) ? .checkmark : .none
 
         return cell
     }
@@ -147,7 +147,7 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
         located at the specified index path.
     */
     private func tableView(_ tableView: UITableView, characteristicCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
-        let characteristic = service.characteristics[(indexPath as NSIndexPath).row]
+        let characteristic = service.characteristics[indexPath.row]
 
         var reuseIdentifier = Identifiers.characteristicCell
         
@@ -178,7 +178,7 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
     
     /// Uses convenience methods to generate a cell based on the index path's section.
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch CharacteristicTableViewSection(rawValue: (indexPath as NSIndexPath).section) {
+        switch CharacteristicTableViewSection(rawValue: indexPath.section) {
             case .characteristics?:
                 return self.tableView(tableView, characteristicCellForRowAtIndexPath: indexPath)
                 

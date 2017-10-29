@@ -129,7 +129,7 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
                     shows a disclosure indicator instead of a checkmark.
     */
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let accessoryType = displayedAccessories[(indexPath as NSIndexPath).row]
+        let accessoryType = displayedAccessories[indexPath.row]
 
         var reuseIdentifier = Identifiers.accessoryCell
         
@@ -152,7 +152,7 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
     
     /// Configures the accessory based on its type.
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch displayedAccessories[(indexPath as NSIndexPath).row] {
+        switch displayedAccessories[indexPath.row] {
             case .homeKit(let accessory):
                 configureAccessory(accessory)
 

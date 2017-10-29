@@ -118,7 +118,7 @@ class LocationTriggerViewController: EventTriggerViewController {
         super implementations for other sections.
     */
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .region?:
                 return self.tableView(tableView, regionStatusCellForRowAtIndexPath: indexPath)
                 
@@ -150,8 +150,8 @@ class LocationTriggerViewController: EventTriggerViewController {
     /// Generates the cell which allow the user to select either 'on enter' or 'on exit'.
     private func tableView(_ tableView: UITableView, regionStatusCellForRowAtIndexPath indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Identifiers.regionStatusCell, for: indexPath)
-        cell.textLabel?.text = LocationTriggerViewController.regionStatusTitles[(indexPath as NSIndexPath).row]
-        cell.accessoryType = (locationTriggerCreator.targetRegionStateIndex == (indexPath as NSIndexPath).row) ? .checkmark : .none
+        cell.textLabel?.text = LocationTriggerViewController.regionStatusTitles[indexPath.row]
+        cell.accessoryType = (locationTriggerCreator.targetRegionStateIndex == indexPath.row) ? .checkmark : .none
         return cell
     }
     
@@ -160,13 +160,13 @@ class LocationTriggerViewController: EventTriggerViewController {
         Defaults to the super implmentation for other sections.
     */
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch sectionForIndex((indexPath as NSIndexPath).section) {
+        switch sectionForIndex(indexPath.section) {
             case .location?:
                 performSegue(withIdentifier: Identifiers.selectLocationSegue, sender: self)
                 
             case .region?:
-                locationTriggerCreator.targetRegionStateIndex = (indexPath as NSIndexPath).row
-                let reloadIndexSet = IndexSet(integer: (indexPath as NSIndexPath).section)
+                locationTriggerCreator.targetRegionStateIndex = indexPath.row
+                let reloadIndexSet = IndexSet(integer: indexPath.section)
                 tableView.reloadSections(reloadIndexSet, with: .automatic)
                 
             case nil:

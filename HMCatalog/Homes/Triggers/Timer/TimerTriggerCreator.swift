@@ -13,7 +13,7 @@ import HomeKit
     of timer triggers.
 */
 class TimerTriggerCreator: TriggerCreator {
-    static let RecurrenceComponents: [NSCalendar.Unit] = [
+    static let RecurrenceComponents: [Calendar.Component] = [
         .hour,
         .day,
         .weekOfYear
@@ -25,12 +25,12 @@ class TimerTriggerCreator: TriggerCreator {
         return trigger as? HMTimerTrigger
     }
     
-    var selectedRecurrenceIndex = NSNotFound
+    var selectedRecurrenceIndex: Int? = nil
     
     var rawFireDate = Date()
     var fireDate: Date {
-        let flags: NSCalendar.Unit = [.year, .weekday, .month, .day, .hour, .minute]
-        let dateComponents = (Calendar.current as NSCalendar).components(flags, from: self.rawFireDate)
+        let flags: Set<Calendar.Component> = [.year, .weekday, .month, .day, .hour, .minute]
+        let dateComponents = Calendar.current.dateComponents(flags, from: self.rawFireDate)
         let probableDate = Calendar.current.date(from: dateComponents)
         return probableDate ?? rawFireDate
     }
@@ -66,19 +66,19 @@ class TimerTriggerCreator: TriggerCreator {
                    `hour`, or `day` is set to 1.
     */
     var recurrenceComponents:DateComponents? {
-        if selectedRecurrenceIndex == NSNotFound {
+        guard let selectedRecurrenceIndex = selectedRecurrenceIndex else {
             return nil
         }
         var recurrenceComponents = DateComponents()
         let unit = TimerTriggerCreator.RecurrenceComponents[selectedRecurrenceIndex]
         switch unit {
-            case NSCalendar.Unit.weekOfYear:
+            case .weekOfYear:
                 recurrenceComponents.weekOfYear = 1
             
-            case NSCalendar.Unit.hour:
+            case .hour:
                 recurrenceComponents.hour = 1
             
-            case NSCalendar.Unit.day:
+            case .day:
                 recurrenceComponents.day = 1
             
             default:
@@ -95,22 +95,22 @@ class TimerTriggerCreator: TriggerCreator {
         
         - returns: An index for the date components.
     */
-    func recurrenceIndexFromDateComponents(_ components: DateComponents?) -> Int {
-        guard let components = components else { return NSNotFound }
-        var unit: NSCalendar.Unit?
+    func recurrenceIndexFromDateComponents(_ components: DateComponents?) -> Int? {
+        guard let components = components else { return nil }
+        var unit: Calendar.Component?
         if components.day == 1 {
-            unit = NSCalendar.Unit.day
+            unit = .day
         }
         else if components.weekOfYear == 1 {
-            unit = NSCalendar.Unit.weekOfYear
+            unit = .weekOfYear
         }
         else if components.hour == 1 {
-            unit = NSCalendar.Unit.hour
+            unit = .hour
         }
         if let unit = unit {
-            return TimerTriggerCreator.RecurrenceComponents.index(of: unit) ?? NSNotFound
+            return TimerTriggerCreator.RecurrenceComponents.index(of: unit)
         }
-        return NSNotFound
+        return nil
     }
     
     /**
@@ -126,7 +126,7 @@ class TimerTriggerCreator: TriggerCreator {
         saveTriggerGroup.enter()
         timerTrigger?.updateFireDate(fireDate) { error in
             if let error = error {
-                self.errors.append(error as NSError)
+                self.errors.append(error)
             }
             self.saveTriggerGroup.leave()
         }
@@ -145,7 +145,7 @@ class TimerTriggerCreator: TriggerCreator {
         saveTriggerGroup.enter()
         timerTrigger?.updateRecurrence(recurrenceComponents) { error in
             if let error = error {
-                self.errors.append(error as NSError)
+                self.errors.append(error)
             }
             self.saveTriggerGroup.leave()
         }
