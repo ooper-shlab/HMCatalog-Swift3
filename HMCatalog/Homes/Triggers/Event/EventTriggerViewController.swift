@@ -231,6 +231,10 @@ class EventTriggerViewController: TriggerViewController {
         alertController.addAction(cancelAction)
         
         // Present alert.
+        if let presenter = alertController.popoverPresentationController {
+            presenter.sourceView = self.view
+            presenter.sourceRect = self.view.bounds
+        }
         present(alertController, animated: true, completion: nil)
     }
     

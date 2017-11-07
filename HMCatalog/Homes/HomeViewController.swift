@@ -629,7 +629,13 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
         alertController.addAction(cancelAction)
         
         // Present alert
-        present(alertController, animated: true, completion: nil)
+        if let presenter = alertController.popoverPresentationController {
+        
+            presenter.sourceView = self.view
+            presenter.sourceRect = self.view.frame
+            presenter.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
+        }
+        self.present(alertController, animated: true, completion: nil)
     }
     
     /// Navigates into the action set view controller.
