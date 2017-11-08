@@ -69,7 +69,7 @@ class SliderCharacteristicCell: CharacteristicCell {
    
       - parameter slider: The slider that changed.
    */
-   func didChangeSliderValue(_ slider: UISlider) {
+   @IBAction func didChangeSliderValue(_ slider: UISlider) {
       let value = roundedValueForSliderValue(slider.value)
       setValue(value as NSNumber?, notify: true)
    }
