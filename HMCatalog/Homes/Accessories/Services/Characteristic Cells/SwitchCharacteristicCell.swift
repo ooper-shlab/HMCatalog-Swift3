@@ -42,7 +42,7 @@ class SwitchCharacteristicCell: CharacteristicCell {
         
         - parameter valueSwitch: The switch that updated.
     */
-    func didChangeSwitchValue(_ valueSwitch: UISwitch) {
+    @IBAction func didChangeSwitchValue(_ valueSwitch: UISwitch) {
         setValue(valueSwitch.isOn as NSNumber?, notify: true)
     }
     
