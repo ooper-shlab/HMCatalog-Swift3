@@ -136,7 +136,7 @@ class HomeListConfigurationViewController: HomeListViewController {
     }
     
     /// Removes the home from HomeKit if the row is deleted.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             removeHomeAtIndexPath(indexPath)
         }
@@ -208,7 +208,7 @@ class HomeListConfigurationViewController: HomeListViewController {
         - parameter home: The `HMHome` to remove.
     */
     override func didRemoveHome(_ home: HMHome) {
-        guard let index = homes.index(of: home) else { return }
+        guard let index = homes.firstIndex(of: home) else { return }
 
         let indexPath = IndexPath(row: index, section: HomeListSection.homes.rawValue)
         homes.remove(at: index)
@@ -234,7 +234,7 @@ class HomeListConfigurationViewController: HomeListViewController {
     override func didAddHome(_ home: HMHome) {
         homes.append(home)
         sortHomes()
-        guard let newHomeIndex = homes.index(of: home) else { return }
+        guard let newHomeIndex = homes.firstIndex(of: home) else { return }
 
         let indexPath = IndexPath(row: newHomeIndex, section: HomeListSection.homes.rawValue)
         
@@ -284,7 +284,7 @@ class HomeListConfigurationViewController: HomeListViewController {
     
     /// Finds the home in the internal structure and reloads the corresponding row.
     override func homeDidUpdateName(_ home: HMHome) {
-        if let index = homes.index(of: home) {
+        if let index = homes.firstIndex(of: home) {
             let listIndexPath = IndexPath(row: index, section: HomeListSection.homes.rawValue)
 
             let primaryIndexPath = IndexPath(row: index, section: HomeListSection.primaryHome.rawValue)

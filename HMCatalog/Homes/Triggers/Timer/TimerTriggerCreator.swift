@@ -108,7 +108,7 @@ class TimerTriggerCreator: TriggerCreator {
             unit = .hour
         }
         if let unit = unit {
-            return TimerTriggerCreator.RecurrenceComponents.index(of: unit)
+            return TimerTriggerCreator.RecurrenceComponents.firstIndex(of: unit)
         }
         return nil
     }

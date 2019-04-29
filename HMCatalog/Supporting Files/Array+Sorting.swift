@@ -55,8 +55,8 @@ extension Collection where Iterator.Element: HMActionSet {
             }
             else if actionSet1.isBuiltIn && actionSet2.isBuiltIn {
                 // If comparing two built-ins, we follow a standard ranking
-                let firstIndex = HMActionSet.Constants.builtInActionSetTypes.index(of: actionSet1.actionSetType) ?? NSNotFound
-                let secondIndex = HMActionSet.Constants.builtInActionSetTypes.index(of: actionSet2.actionSetType) ?? NSNotFound
+                let firstIndex = HMActionSet.Constants.builtInActionSetTypes.firstIndex(of: actionSet1.actionSetType) ?? NSNotFound
+                let secondIndex = HMActionSet.Constants.builtInActionSetTypes.firstIndex(of: actionSet2.actionSetType) ?? NSNotFound
                 return firstIndex < secondIndex
             }
             else {

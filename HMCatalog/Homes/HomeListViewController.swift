@@ -35,7 +35,7 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
 
         tableView.estimatedRowHeight = 44.0
         
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
     }
     
     /// Resets the list of homes (which will update the view).
@@ -164,7 +164,7 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
 
         sortHomes()
         
-        if let newHomeIndex = homes.index(of: home) {
+        if let newHomeIndex = homes.firstIndex(of: home) {
             let indexPathOfNewHome = IndexPath(row: newHomeIndex, section: 0)
            
             tableView.insertRows(at: [indexPathOfNewHome], with: .automatic)
@@ -178,7 +178,7 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
         - parameter home: The `HMHome` to remove.
     */
     func didRemoveHome(_ home: HMHome) {
-        guard let removedHomeIndex = homes.index(of: home) else { return }
+        guard let removedHomeIndex = homes.firstIndex(of: home) else { return }
         
         homes.remove(at: removedHomeIndex)
         let indexPath = IndexPath(row: removedHomeIndex, section: 0)
@@ -203,7 +203,7 @@ class HomeListViewController: HMCatalogViewController, HMHomeManagerDelegate {
     
     /// Finds the cell with corresponds to the provided home and reloads it.
     func homeDidUpdateName(_ home: HMHome) {
-        if let homeIndex = homes.index(of: home) {
+        if let homeIndex = homes.firstIndex(of: home) {
             let indexPath = IndexPath(row: homeIndex, section: 0)
           
             tableView.reloadRows(at: [indexPath], with: .automatic)

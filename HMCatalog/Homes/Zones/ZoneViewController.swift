@@ -100,7 +100,7 @@ class ZoneViewController: HMCatalogViewController {
 
         sortRooms()
         
-        if let newRoomIndex = rooms.index(of: room) {
+        if let newRoomIndex = rooms.firstIndex(of: room) {
             let newRoomIndexPath = IndexPath(row: newRoomIndex, section: 0)
             tableView.insertRows(at: [newRoomIndexPath], with: .automatic)
         }
@@ -115,7 +115,7 @@ class ZoneViewController: HMCatalogViewController {
         - parameter room: The `HMRoom` to remove.
     */
     private func didRemoveRoom(_ room: HMRoom) {
-        if let roomIndex = rooms.index(of: room) {
+        if let roomIndex = rooms.firstIndex(of: room) {
             rooms.remove(at: roomIndex)
             let roomIndexPath = IndexPath(row: roomIndex, section: 0)
             tableView.deleteRows(at: [roomIndexPath], with: .automatic)
@@ -130,7 +130,7 @@ class ZoneViewController: HMCatalogViewController {
         - parameter room: The `HMRoom` to reload.
     */
     private func didUpdateRoom(_ room: HMRoom) {
-        if let roomIndex = rooms.index(of: room) {
+        if let roomIndex = rooms.firstIndex(of: room) {
             let roomIndexPath = IndexPath(row: roomIndex, section: 0)
             tableView.reloadRows(at: [roomIndexPath], with: .automatic)
         }
@@ -203,7 +203,7 @@ class ZoneViewController: HMCatalogViewController {
     }
     
     /// Deletes the room at the provided index path.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let room = rooms[indexPath.row]
 

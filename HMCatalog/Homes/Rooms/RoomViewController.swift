@@ -64,7 +64,7 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Assigns the 'deleted' room to the home's roomForEntireHome.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             unassignAccessory(accessories[indexPath.row])
         }
@@ -139,7 +139,7 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
     private func didAssignAccessory(_ accessory: HMAccessory) {
         accessories.append(accessory)
         sortAccessories()
-        if let newAccessoryIndex = accessories.index(of: accessory) {
+        if let newAccessoryIndex = accessories.firstIndex(of: accessory) {
             let newAccessoryIndexPath = IndexPath(row: newAccessoryIndex, section: 0)
             tableView.insertRows(at: [newAccessoryIndexPath], with: .automatic)
         }
@@ -152,7 +152,7 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
         - parameter accessory: The `HMAccessory` to remove.
     */
     private func didUnassignAccessory(_ accessory: HMAccessory) {
-        if let accessoryIndex = accessories.index(of: accessory) {
+        if let accessoryIndex = accessories.firstIndex(of: accessory) {
             accessories.remove(at: accessoryIndex)
             let accessoryIndexPath = IndexPath(row: accessoryIndex, section: 0)
             tableView.deleteRows(at: [accessoryIndexPath], with: .automatic)
@@ -196,7 +196,7 @@ class RoomViewController: HMCatalogViewController, HMAccessoryDelegate {
         - parameter accessory: The `HMAccessory` to reload.
     */
     func didModifyAccessory(_ accessory: HMAccessory){
-        if let index = accessories.index(of: accessory) {
+        if let index = accessories.firstIndex(of: accessory) {
             let indexPaths = [
                 IndexPath(row: index, section: 0)
             ]

@@ -43,7 +43,7 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.estimatedRowHeight = 44.0
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
     }
     
     /// Reloads the view.
@@ -239,7 +239,7 @@ class ServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
     
     /// Reloads the cell for the specified service.
     func accessory(_ accessory: HMAccessory, didUpdateNameFor service: HMService) {
-        if let index = displayedServices.index(of: service) {
+        if let index = displayedServices.firstIndex(of: service) {
             let path = IndexPath(row: index, section: AccessoryTableViewSection.services.rawValue)
             tableView.reloadRows(at: [path], with: .automatic)
         }

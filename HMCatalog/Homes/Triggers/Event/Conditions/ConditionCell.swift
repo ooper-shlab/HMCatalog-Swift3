@@ -21,7 +21,7 @@ class ConditionCell: UITableViewCell {
         }()
     
     /// Ignores the passed-in style and overrides it with .Subtitle.
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
         selectionStyle = .none
         detailTextLabel?.textColor = UIColor.lightGray

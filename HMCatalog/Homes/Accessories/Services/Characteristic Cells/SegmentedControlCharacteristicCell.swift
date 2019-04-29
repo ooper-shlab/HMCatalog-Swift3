@@ -78,7 +78,7 @@ class SegmentedControlCharacteristicCell: CharacteristicCell {
     
     /// Sets the segmented control based on the set value.
     func resetSelectedIndex() {
-        if let intValue = value as? Int, let index = possibleValues.index(of: intValue) {
+        if let intValue = value as? Int, let index = possibleValues.firstIndex(of: intValue) {
             segmentedControl.selectedSegmentIndex = index
         }
     }

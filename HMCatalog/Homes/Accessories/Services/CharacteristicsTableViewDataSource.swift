@@ -44,7 +44,7 @@ class CharacteristicsTableViewDataSource: NSObject, UITableViewDelegate, UITable
         self.allowsAllWrites = allowsAllWrites
         super.init()
         tableView.dataSource = self
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 50.0
         registerReuseIdentifiers()
     }

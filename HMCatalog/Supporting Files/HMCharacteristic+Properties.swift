@@ -94,6 +94,9 @@ extension HMCharacteristic {
                         
                         case .stopped:
                             return NSLocalizedString("Stopped", comment: "Stopped")
+                        
+                    @unknown default:
+                        return ""
                     }
                 }
             
@@ -111,6 +114,8 @@ extension HMCharacteristic {
                             
                         case .auto:
                             return NSLocalizedString("Auto", comment: "Auto")
+                    @unknown default:
+                        return ""
                     }
                 }
             
@@ -128,6 +133,8 @@ extension HMCharacteristic {
                         
                         case .auto:
                             return NSLocalizedString("Auto", comment: "Auto")
+                        @unknown default:
+                            return ""
                     }
                 }
             
@@ -145,6 +152,9 @@ extension HMCharacteristic {
                         
                         case .jammed:
                             return NSLocalizedString("Jammed", comment: "Jammed")
+                        
+                        @unknown default:
+                            return ""
                     }
                 }
             
@@ -156,6 +166,9 @@ extension HMCharacteristic {
                         
                         case .fahrenheit:
                             return NSLocalizedString("Fahrenheit", comment: "Fahrenheit")
+                        
+                        @unknown default:
+                            return ""
                     }
                 }
             
@@ -194,6 +207,9 @@ extension HMCharacteristic {
                         
                         case .unsecuredUsingPhysicalMovement:
                             return NSLocalizedString("Unsecured Using Physical Movement", comment: "Unsecured Using Physical Movement")
+                        
+                        @unknown default:
+                            return ""
                     }
                 }
             
@@ -205,6 +221,9 @@ extension HMCharacteristic {
                         
                         case .counterClockwise:
                             return NSLocalizedString("Counter Clockwise", comment: "Counter Clockwise")
+                        
+                        @unknown default:
+                            return ""
                     }
                 }
             
@@ -216,6 +235,9 @@ extension HMCharacteristic {
                         
                         case .size2_5:
                             return NSLocalizedString("Size 2.5", comment: "Size 2.5")
+                        
+                        @unknown default:
+                            return ""
                     }
                 }
             
@@ -230,6 +252,9 @@ extension HMCharacteristic {
                         
                         case .stopped:
                             return NSLocalizedString("Stopped", comment: "Stopped")
+                        
+                        @unknown default:
+                            return ""
                     }
                 }
             
@@ -250,6 +275,9 @@ extension HMCharacteristic {
                         
                         case .triggered:
                             return NSLocalizedString("Triggered", comment: "Triggered")
+                        
+                        @unknown default:
+                            return ""
                     }
                 }
             
@@ -267,6 +295,9 @@ extension HMCharacteristic {
                         
                         case .disarm:
                             return NSLocalizedString("Disarm", comment: "Disarm")
+                        
+                        @unknown default:
+                            return ""
                     }
                 }
             

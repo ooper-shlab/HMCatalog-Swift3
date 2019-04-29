@@ -33,7 +33,7 @@ class TabBarController: UITabBarController {
     
     /// Save the current selected tab into defaults.
     override func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
-        if let tabBarItems = tabBar.items, let index = tabBarItems.index(of: item) {
+        if let tabBarItems = tabBar.items, let index = tabBarItems.firstIndex(of: item) {
 
             let userDefaults = UserDefaults.standard
             

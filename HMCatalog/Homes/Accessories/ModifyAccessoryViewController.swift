@@ -38,7 +38,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
     private var selectedRoom: HMRoom!
     
     @IBOutlet weak var nameField: UITextField!
-    private lazy var activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+    private lazy var activityIndicator = UIActivityIndicatorView(style: .gray)
     
     private let saveAccessoryGroup = DispatchGroup()
     
@@ -58,7 +58,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
         super.viewDidLoad()
         
         tableView.estimatedRowHeight = 44.0
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         
         selectedRoom = accessory.room ?? home.roomForEntireHome()
         
@@ -235,7 +235,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
     
     /// Enables the save button if the name field is not empty.
     func enableAddButtonIfApplicable() {
-        addButton.isEnabled = home.isAdmin && trimmedName.characters.count > 0
+        addButton.isEnabled = home.isAdmin && trimmedName.count > 0
     }
     
     /// - returns:  The `nameField`'s text, trimmed of newline and whitespace characters.
@@ -273,7 +273,7 @@ class ModifyAccessoryViewController: HMCatalogViewController, HMAccessoryDelegat
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch AddAccessoryTableViewSection(rawValue: indexPath.section) {
             case .rooms?:
-                return UITableViewAutomaticDimension
+                return UITableView.automaticDimension
                 
             case nil:
                 fatalError("Unexpected `AddAccessoryTableViewSection` raw value.")

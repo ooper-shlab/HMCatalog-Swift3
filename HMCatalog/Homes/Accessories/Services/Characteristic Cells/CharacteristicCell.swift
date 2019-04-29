@@ -135,7 +135,7 @@ class CharacteristicCell: UITableViewCell {
             if enabled {
                 delegate?.characteristicCell(self, readInitialValueForCharacteristic: characteristic) { value, error in
                     if let error = error {
-                        print("HomeKit: Error reading value for characteristic \(self.characteristic): \(error.localizedDescription).")
+                        print("HomeKit: Error reading value for characteristic \(self.characteristic?.description ?? ""): \(error.localizedDescription).")
                     }
                     else {
                         self.setValue(value, notify: false)

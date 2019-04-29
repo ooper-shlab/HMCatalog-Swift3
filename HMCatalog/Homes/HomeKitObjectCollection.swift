@@ -79,32 +79,32 @@ class HomeKitObjectCollection {
     func indexPathOfObject(_ object: AnyObject) -> IndexPath? {
         switch object {
             case let actionSet as HMActionSet:
-                if let index = actionSets.index(of: actionSet) {
+                if let index = actionSets.firstIndex(of: actionSet) {
                     return IndexPath(row: index, section: HomeKitObjectSection.actionSet.rawValue)
                 }
                 
             case let accessory as HMAccessory:
-                if let index = accessories.index(of: accessory) {
+                if let index = accessories.firstIndex(of: accessory) {
                     return IndexPath(row: index, section: HomeKitObjectSection.accessory.rawValue)
                 }
                 
             case let room as HMRoom:
-                if let index = rooms.index(of: room) {
+                if let index = rooms.firstIndex(of: room) {
                     return IndexPath(row: index, section: HomeKitObjectSection.room.rawValue)
                 }
                 
             case let zone as HMZone:
-                if let index = zones.index(of: zone) {
+                if let index = zones.firstIndex(of: zone) {
                     return IndexPath(row: index, section: HomeKitObjectSection.zone.rawValue)
                 }
                 
             case let trigger as HMTrigger:
-                if let index = triggers.index(of: trigger) {
+                if let index = triggers.firstIndex(of: trigger) {
                     return IndexPath(row: index, section: HomeKitObjectSection.trigger.rawValue)
                 }
                 
             case let serviceGroup as HMServiceGroup:
-                if let index = serviceGroups.index(of: serviceGroup) {
+                if let index = serviceGroups.firstIndex(of: serviceGroup) {
                     return IndexPath(row: index, section: HomeKitObjectSection.serviceGroup.rawValue)
                 }
                 
@@ -122,32 +122,32 @@ class HomeKitObjectCollection {
     func remove(_ object: AnyObject) {
         switch object {
             case let actionSet as HMActionSet:
-                if let index = actionSets.index(of: actionSet) {
+                if let index = actionSets.firstIndex(of: actionSet) {
                     actionSets.remove(at: index)
                 }
                 
             case let accessory as HMAccessory:
-                if let index = accessories.index(of: accessory) {
+                if let index = accessories.firstIndex(of: accessory) {
                     accessories.remove(at: index)
                 }
                 
             case let room as HMRoom:
-                if let index = rooms.index(of: room) {
+                if let index = rooms.firstIndex(of: room) {
                     rooms.remove(at: index)
                 }
                 
             case let zone as HMZone:
-                if let index = zones.index(of: zone) {
+                if let index = zones.firstIndex(of: zone) {
                     zones.remove(at: index)
                 }
                 
             case let trigger as HMTrigger:
-                if let index = triggers.index(of: trigger) {
+                if let index = triggers.firstIndex(of: trigger) {
                     triggers.remove(at: index)
                 }
                 
             case let serviceGroup as HMServiceGroup:
-                if let index = serviceGroups.index(of: serviceGroup) {
+                if let index = serviceGroups.firstIndex(of: serviceGroup) {
                     serviceGroups.remove(at: index)
                 }
                 

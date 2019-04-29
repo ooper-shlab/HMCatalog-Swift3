@@ -127,7 +127,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     override func awakeFromNib() {
         super.awakeFromNib()
         tableView.estimatedRowHeight = 44.0
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
     }
     
     /// Sets the navigation title and reloads view.
@@ -519,7 +519,7 @@ class HomeViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Removes the HomeKit object at the specified index path.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let homeKitObject = homeKitObjectAtIndexPath(indexPath)!
             

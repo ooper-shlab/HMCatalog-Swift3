@@ -81,7 +81,7 @@ class AddServicesViewController: HMCatalogViewController, HMAccessoryDelegate {
         let service = serviceAtIndexPath(indexPath)
         
         // Call the appropriate add/remove operation with the closure from above.
-        if let index = selectedServices.index(of: service) {
+        if let index = selectedServices.firstIndex(of: service) {
             selectedServices.remove(at: index)
         }
         else {

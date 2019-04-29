@@ -105,7 +105,7 @@ class TimeConditionViewController: HMCatalogViewController {
     /// Configures the table view.
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 44.0
     }
     

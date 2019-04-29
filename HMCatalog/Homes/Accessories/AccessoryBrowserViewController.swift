@@ -65,7 +65,7 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
     /// Configures the table view and initializes the accessory browsers.
     override func viewDidLoad() {
         tableView.estimatedRowHeight = 44.0
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         accessoryBrowser.delegate = self
 
         #if arch(arm)
@@ -185,7 +185,7 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
         var accessories = [AccessoryType]()
         accessories += accessoryBrowser.discoveredAccessories.map { .homeKit(accessory: $0) }
 
-        accessories += addedAccessories.flatMap { addedAccessory in
+        accessories += addedAccessories.compactMap { addedAccessory in
             let accessoryType = AccessoryType.homeKit(accessory: addedAccessory)
             
             return accessories.contains(accessoryType) ? nil : accessoryType
@@ -194,7 +194,7 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
         if let external = externalAccessoryBrowser?.unconfiguredAccessories {
             let unconfiguredAccessoriesArray = Array(external)
 
-            accessories += unconfiguredAccessoriesArray.flatMap { addedAccessory in
+            accessories += unconfiguredAccessoriesArray.compactMap { addedAccessory in
                 let accessoryType = AccessoryType.external(accessory: addedAccessory)
                 
                 return accessories.contains(accessoryType) ? nil : accessoryType
@@ -283,7 +283,7 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
         displayedAccessories.append(newAccessory)
         displayedAccessories = displayedAccessories.sortByLocalizedName()
 
-        if let newIndex = displayedAccessories.index(of: newAccessory) {
+        if let newIndex = displayedAccessories.firstIndex(of: newAccessory) {
             let newIndexPath = IndexPath(row: newIndex, section: 0)
             tableView.insertRows(at: [newIndexPath], with: .automatic)
         }
@@ -298,7 +298,7 @@ class AccessoryBrowserViewController: HMCatalogViewController, ModifyAccessoryDe
         if !displayedAccessories.contains(removedAccessory)  {
             return
         }
-        if let removedIndex = displayedAccessories.index(of: removedAccessory) {
+        if let removedIndex = displayedAccessories.firstIndex(of: removedAccessory) {
             let removedIndexPath = IndexPath(row: removedIndex, section: 0)
             displayedAccessories.remove(at: removedIndex)
             tableView.deleteRows(at: [removedIndexPath], with: .automatic)

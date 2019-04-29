@@ -1,9 +1,10 @@
 # HomeKit Catalog
 
-## An experimental conversion from Swift 2.3 to Swift 4
+## An experimental conversion from Swift 2.3 to Swift 5
 
 Converted by OOPer in cooperation with shlab.jp, on 2016/10/02.
 Swift 3 to Swift 4 conversion on 2017/10/30.
+Swift 4 to Swift 5 conversion on 2019/04/30.
 
 CAUTION
 -------
@@ -26,7 +27,7 @@ You should not contact to Apple or SHLab(jp) about any faults caused by my conve
 
 ### Build
 
-Xcode 9.0.1; iOS 11 SDK
+Xcode 10.2.1; iOS 12.2 SDK
 
 ### Runtime
 

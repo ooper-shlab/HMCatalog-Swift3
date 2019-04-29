@@ -48,7 +48,7 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
     /// Configures the table view and tab bar.
     override func awakeFromNib() {
         tableView.estimatedRowHeight = 44.0
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         tableView.allowsSelectionDuringEditing = true
 
         registerReuseIdentifiers()
@@ -232,11 +232,11 @@ class FavoritesViewController: UITableViewController, UITabBarControllerDelegate
     func accessory(_ accessory: HMAccessory, service: HMService, didUpdateValueFor characteristic: HMCharacteristic) {
         guard let accessory = characteristic.service?.accessory else { return }
 
-        guard let indexOfAccessory = favoriteAccessories.index(of: accessory) else { return }
+        guard let indexOfAccessory = favoriteAccessories.firstIndex(of: accessory) else { return }
         
         let favoriteCharacteristics = FavoritesManager.sharedManager.favoriteCharacteristicsForAccessory(accessory)
         
-        guard let indexOfCharacteristic = favoriteCharacteristics.index(of: characteristic) else { return }
+        guard let indexOfCharacteristic = favoriteCharacteristics.firstIndex(of: characteristic) else { return }
         
         let indexPath = IndexPath(row: indexOfCharacteristic, section: indexOfAccessory)
         

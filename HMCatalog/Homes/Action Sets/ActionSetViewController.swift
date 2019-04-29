@@ -56,7 +56,7 @@ class ActionSetViewController: HMCatalogViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: Identifiers.unreachableAccessoryCell)
         tableView.register(ActionCell.self, forCellReuseIdentifier: Identifiers.actionCell)
         
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         
         tableView.estimatedRowHeight = 44.0
         
@@ -172,7 +172,7 @@ class ActionSetViewController: HMCatalogViewController {
     }
     
     /// Removes the action associated with the index path.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let characteristic = actionSetCreator.allCharacteristics[indexPath.row]
             actionSetCreator.removeTargetValueForCharacteristic(characteristic) {
@@ -198,7 +198,7 @@ class ActionSetViewController: HMCatalogViewController {
                 return super.tableView(tableView, heightForRowAt: indexPath)
                 
             case .actions?, .accessories?:
-                return UITableViewAutomaticDimension
+                return UITableView.automaticDimension
                 
             case nil:
                 fatalError("Unexpected `ActionSetTableViewSection` raw value.")
@@ -231,7 +231,7 @@ class ActionSetViewController: HMCatalogViewController {
     
     /// Enables the save button if there is a valid name and at least one action.
     private func enableSaveButtonIfNecessary() {
-        saveButton.isEnabled = home.isAdmin && trimmedName.characters.count > 0 && actionSetCreator.containsActions
+        saveButton.isEnabled = home.isAdmin && trimmedName.count > 0 && actionSetCreator.containsActions
     }
     
     /// - returns:  The contents of the nameField, with whitespace trimmed from the beginning and end.

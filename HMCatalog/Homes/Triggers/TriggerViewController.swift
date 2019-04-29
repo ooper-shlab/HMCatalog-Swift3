@@ -68,7 +68,7 @@ class TriggerViewController: HMCatalogViewController {
         }
 
         actionSets = filteredActionSets.sortByTypeAndLocalizedName()
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 44.0
         
         /*
@@ -160,7 +160,7 @@ class TriggerViewController: HMCatalogViewController {
         2. There will be at least one action set in the trigger after saving.
     */
     private func enableSaveButtonIfApplicable() {
-        saveButton.isEnabled = !trimmedName.characters.isEmpty &&
+        saveButton.isEnabled = !trimmedName.isEmpty &&
             (!selectedActionSets.isEmpty || trigger?.actionSets.count ?? 0 > 0)
     }
     
@@ -234,7 +234,7 @@ class TriggerViewController: HMCatalogViewController {
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")
                 
             default:
-                return UITableViewAutomaticDimension
+                return UITableView.automaticDimension
         }
     }
     
@@ -272,7 +272,7 @@ class TriggerViewController: HMCatalogViewController {
     */
     func tableView(_ tableView: UITableView, didSelectActionSetAtIndexPath indexPath: IndexPath) {
         let actionSet = actionSets[indexPath.row]
-        if let index = selectedActionSets.index(of: actionSet) {
+        if let index = selectedActionSets.firstIndex(of: actionSet) {
             selectedActionSets.remove(at: index)
         }
         else {

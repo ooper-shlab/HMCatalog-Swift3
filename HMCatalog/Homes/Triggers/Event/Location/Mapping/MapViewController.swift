@@ -59,12 +59,12 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
         didSet {
             // Remove the old overlay (if exists)
             if let oldOverlay = oldValue {
-                mapView.remove(oldOverlay)
+                mapView.removeOverlay(oldOverlay)
             }
             
             // Add the new overlay (if exists)
             if let overlay = circleOverlay {
-                mapView.add(overlay)
+                mapView.addOverlay(overlay)
             }
         }
     }
@@ -185,7 +185,7 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
     private func annotateAndZoomToRegion(_ region: CLCircularRegion) {
         circleOverlay = MKCircle(center: region.center, radius: region.radius)
         let multiplier = MapViewController.MapRegionFraction
-        let mapRegion = MKCoordinateRegionMakeWithDistance(region.center, region.radius*multiplier, region.radius*multiplier)
+        let mapRegion = MKCoordinateRegion.init(center: region.center, latitudinalMeters: region.radius*multiplier, longitudinalMeters: region.radius*multiplier)
         mapView.setRegion(mapRegion, animated: false)
     }
     
@@ -194,7 +194,7 @@ class MapViewController: UIViewController, UISearchBarDelegate, CLLocationManage
         in the map's region that match the `searchBar`'s text.
     */
     private func performSearch() {
-        let request = MKLocalSearchRequest()
+        let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = searchBar.text
         let multiplier = MapViewController.RegionQueryDegreeMultiplier
         let querySpan = MKCoordinateSpan(latitudeDelta: mapView.region.span.latitudeDelta*multiplier, longitudeDelta: mapView.region.span.longitudeDelta*multiplier)

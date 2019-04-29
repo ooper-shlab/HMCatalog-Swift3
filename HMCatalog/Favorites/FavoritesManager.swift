@@ -170,11 +170,11 @@ class FavoritesManager {
 
         guard let characteristicIdentifiers = accessoryToCharacteristicIdentifiers[accessoryIdentifier] else { return }
         
-        guard let indexOfCharacteristic = characteristicIdentifiers.index(of: characteristic.uniqueIdentifier) else { return }
+        guard let indexOfCharacteristic = characteristicIdentifiers.firstIndex(of: characteristic.uniqueIdentifier) else { return }
         
         // Remove the characteristic from the mapped collection.
         accessoryToCharacteristicIdentifiers[accessoryIdentifier]?.remove(at: indexOfCharacteristic)
-        if let indexOfAccessory = accessoryIdentifiers.index(of: accessoryIdentifier),
+        if let indexOfAccessory = accessoryIdentifiers.firstIndex(of: accessoryIdentifier),
                let isEmpty = accessoryToCharacteristicIdentifiers[accessoryIdentifier]?.isEmpty
                , isEmpty {
             /*

@@ -100,7 +100,7 @@ class ServiceGroupViewController: HMCatalogViewController, HMAccessoryDelegate {
     }
     
     /// Deleting a cell removes the corresponding service from the service group.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             removeServiceAtIndexPath(indexPath)
         }

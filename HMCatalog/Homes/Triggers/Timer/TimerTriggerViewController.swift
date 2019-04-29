@@ -47,7 +47,7 @@ class TimerTriggerViewController: TriggerViewController {
     /// Configures the views and registers for table view cells.
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 44.0
         triggerCreator = TimerTriggerCreator(trigger: trigger, home: home)
         datePicker.date = timerTriggerCreator.fireDate as Date
@@ -120,7 +120,7 @@ class TimerTriggerViewController: TriggerViewController {
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch sectionForIndex(indexPath.section) {
             case .recurrence?:
-                return UITableViewAutomaticDimension
+                return UITableView.automaticDimension
                 
             case nil:
                 fatalError("Unexpected `TriggerTableViewSection` raw value.")

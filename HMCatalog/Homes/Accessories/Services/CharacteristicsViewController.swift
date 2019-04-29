@@ -158,7 +158,7 @@ class CharacteristicsViewController: HMCatalogViewController, HMAccessoryDelegat
         update its value.
     */
     func accessory(_ accessory: HMAccessory, service: HMService, didUpdateValueFor characteristic: HMCharacteristic) {
-        if let index = service.characteristics.index(of: characteristic) {
+        if let index = service.characteristics.firstIndex(of: characteristic) {
             let indexPath = IndexPath(row: index, section: 0)
             if let cell = tableView.cellForRow(at: indexPath) as? CharacteristicCell {
                 cell.setValue(characteristic.value as? CellValueType, notify: false)

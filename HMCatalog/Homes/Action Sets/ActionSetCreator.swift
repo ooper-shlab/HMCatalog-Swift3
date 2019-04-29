@@ -179,7 +179,7 @@ class ActionSetCreator: CharacteristicCellDelegate {
         var characteristics = Set<HMCharacteristic>()
         
         if let actions = actionSet?.actions {
-            let actionSetCharacteristics = actions.flatMap { action in
+            let actionSetCharacteristics = actions.compactMap { action in
                 return (action as? HMCharacteristicWriteAction<CellValueType>)?.characteristic
             }
             characteristics.formUnion(actionSetCharacteristics)

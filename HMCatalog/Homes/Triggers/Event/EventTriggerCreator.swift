@@ -56,7 +56,7 @@ class EventTriggerCreator: TriggerCreator, CharacteristicCellDelegate {
         - parameter predicate: The `NSPredicate` to remove.
     */
     func removeCondition(_ predicate: NSPredicate) {
-        if let index = conditions.index(of: predicate) {
+        if let index = conditions.firstIndex(of: predicate) {
             conditions.remove(at: index)
         }
     }

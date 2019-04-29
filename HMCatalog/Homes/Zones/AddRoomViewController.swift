@@ -82,7 +82,7 @@ class AddRoomViewController: HMCatalogViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let room = displayedRooms[indexPath.row]
 
-        if let index = selectedRooms.index(of: room) {
+        if let index = selectedRooms.firstIndex(of: room) {
             selectedRooms.remove(at: index)
         }
         else {
