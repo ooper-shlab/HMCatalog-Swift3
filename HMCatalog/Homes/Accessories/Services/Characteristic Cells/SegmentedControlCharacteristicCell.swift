@@ -57,7 +57,7 @@ class SegmentedControlCharacteristicCell: CharacteristicCell {
     
         - parameter sender: The segmented control that changed.
     */
-    func segmentedControlDidChange(_ sender: UISegmentedControl) {
+    @IBAction func segmentedControlDidChange(_ sender: UISegmentedControl) {
         let value = possibleValues[sender.selectedSegmentIndex]
         setValue(value as NSNumber?, notify: true)
     }
